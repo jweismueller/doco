@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:insert="_general.html :: head" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <h1 class="my-3 text-secondary" th:text="#{admin-user.headline}"></h1>
+    <div th:each="user: ${users}">
+        <div class="my-2">
+            <span th:text="${user.username}"></span>
+            <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+               th:href="@{/admin/user/__${user.id}__}">
+                <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+            </a>
+        </div>
+    </div>
+    <form style="max-width: 550px; width: 100%;" th:if="${user != null}">
+        <div class="form-group">
+            <label for="username" th:text="#{admin-user.label.username}"></label>
+            <input class="form-control" disabled id="username" th:value="${user?.username}" type="text">
+        </div>
+        <div class="form-group" th:if="${newPassword != null}">
+            <label for="username" th:text="#{admin-user.label.password}"></label>
+            <input class="form-control" disabled id="password" th:value="${newPassword}" type="text">
+        </div>
+    </form>
+    <div th:if="${user != null && newPassword == null}">
+        <form method="post" style="max-width: 550px; width: 100%;"
+              th:action="@{/admin/user/__${user.id}__/resetPassword}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <div>
+                <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{admin-user.label.submit}" type="submit"></button>
+            </div>
+        </form>
+    </div>
+    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/html">
+<!--/*@thymesVar id="isAdmin" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="javascriptInject" type="java.lang.String"*/-->
+<!--/*@thymesVar id="currentUser" type="org.springframework.security.core.userdetails.UserDetails"*/-->
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:fragment="head">
+    <title th:text="#{general.title}"></title>
+    <link rel="shortcut icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet"
+          th:href="@{/css/dropzone.min.css}" th:if="${isAdmin}">
+    <link rel="stylesheet" th:href="@{/css/doco.css}">
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script th:if="${isAdmin}"
+            th:src="@{/js/dropzone.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <div th:fragment="header">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <a class="navbar-brand" th:href="@{/}" th:style="'color:' + ${customization.brandColor}">
+                <strong th:utext="#{general.title}"></strong><br><strong th:utext="#{general.title.2ndline}"></strong>
+            </a>
+            <button class="navbar-toggler" data-bs-target="#navbarCollapse" data-bs-toggle="collapse"
+                    th:if="${currentUser != null}"
+                    type="button">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse" th:if="${currentUser != null}">
+                <div class="navbar-nav">
+                    <div class="nav-item dropdown mt-lg-4 ms-lg-2">
+                        <div class="text-secondary small mb-3 mb-lg-0 px-lg-2"
+                             th:text="#{general.nav.logedin} + ' ' + ${currentUser.username}"></div>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="@{/}" th:text="#{general.nav.overview}"></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="@{/user}" th:text="#{general.nav.user}"></a>
+                            </li>
+                            <li th:if="${isAdmin}">
+                                <a class="nav-link active" th:href="@{/admin/user}"
+                                   th:text="#{general.nav.administration}"></a>
+                            </li>
+                            <li>
+                                <a class="nav-link active" href="#" onclick="postLogout()"
+                                   th:text="#{general.nav.logout}"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="navbar-nav ms-auto d-none d-xl-block">
+                    <a class="nav-item nav-link" th:href="@{/}">
+                        <img style="max-height: 100px"
+                             th:src="@{/logo.png}">
+                    </a>
+                </div>
+            </div>
+            <script th:inline="javascript"
+                    th:with="logoutUrl=@{/logout}">
+                /*<![CDATA[*/
+                function postLogout() {
+                    let form = document.createElement("form");
+                    form.setAttribute("method", "post");
+                    /*[- we have to use [( here because otherwise the / would be escaped -]*/
+                    form.setAttribute("action", "[(${logoutUrl})]");
+                    form.setAttribute("id", "wQu8HhyH25xQ");
+                    document.body.appendChild(form);
+                    let input = document.createElement("input");
+                    input.setAttribute("type", "hidden")
+                    input.setAttribute("name", "_csrf");
+                    input.setAttribute("value", [[${_csrf.token}]]);
+                    form.appendChild(input);
+                    form.submit();
+                }
+
+                /*]]>*/
+            </script>
+        </nav>
+    </div>
+    <!-- -->
+    <!-- -->
+    <!-- -->
+    <footer class="d-flex flex-wrap justify-content-center py-2 border-top mt-5" th:fragment="footer">
+        <div class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-dark text-decoration-none">
+            <a class="text-decoration-none text-black small"
+               th:href="@{/imprint}" th:text="#{general.footer.imprint}"></a>
+        </div>
+        <script th:utext="${javascriptInject}"></script>
+    </footer>
+    <span th:fragment="download-icon">
+        <svg class="bi bi-download" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+        </svg>
+    </span>
+    <span th:fragment="edit-icon">
+        <svg class="bi bi-pencil-square" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+          <path d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
+                fill-rule="evenodd"/>
+        </svg>
+    </span>
+    <span th:fragment="key-icon">
+        <svg class="bi bi-key" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+             xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
+        <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+    </span>
+    <span th:fragment="plus-icon">
+        <svg class="bi bi-clipboard-plus" fill="currentColor" height="20" viewBox="0 0 16 16" width="20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z"
+                fill-rule="evenodd"/>
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+        </svg>
+    </span>
+    <span th:fragment="trash-icon">
+        <svg class="bi bi-trash" fill="currentColor" height="16" viewBox="0 0 16 16" width="16"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
+                fill-rule="evenodd"/>
+        </svg>
+    </span>
+</div>
+</body>

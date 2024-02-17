@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:insert="_general.html :: head" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <h1 class="my-3 text-secondary" th:text="#{user.headline}"></h1>
+    <div style="max-width: 550px; width: 100%;">
+        <div class="my-3" role="alert">
+            <div class="alert alert-warning" th:if="${param.notSame}" th:text="#{user.msg.notsame}">
+            </div>
+            <div class="alert alert-warning" th:if="${param.notComplex}">
+                <span th:text="#{user.msg.complexity}"></span><br>
+                <a class="text-decoration-none"
+                   target="_blank"
+                   th:href="#{user.msg.complexity.link}" th:text="#{user.msg.complexity.hint}">
+                </a>
+            </div>
+        </div>
+        <form method="post" th:action="@{/user/changepassword}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <div class="mb-3 alert-info alert" th:text="#{user.info.complexity}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="userNewPassword" th:text="#{user.label.password}"></label>
+                <input class="form-control" id="userNewPassword" name="userNewPassword" type="password">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="userNewPasswordRepeat" th:text="#{user.label.password.repeat}"></label>
+                <input class="form-control" id="userNewPasswordRepeat" name="userNewPasswordRepeat" type="password">
+            </div>
+            <div>
+                <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{user.label.submit}" type="submit"></button>
+            </div>
+        </form>
+    </div>
+    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+</div>
+</body>
+</html>

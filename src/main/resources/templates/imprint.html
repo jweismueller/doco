@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="isAdmin" type="java.lang.Boolean"*/-->
+<head th:insert="_general.html :: head" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div th:utext="${imprint}">
+    </div>
+    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+</div>
+</body>
+</html>

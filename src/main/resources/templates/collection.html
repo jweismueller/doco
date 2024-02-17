@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="isAdmin" type="java.lang.Boolean"*/-->
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:insert="_general.html :: head" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <h1 class="my-3 text-secondary"
+        th:attr="folder=${collection.physicalFolder}"
+        th:text="${collection.name}"></h1>
+    <div class="row">
+        <div class="col">
+            <div th:each="document:${collection.getDocuments()}">
+                <div class="my-3">
+                    <a class="text-decoration-none"
+                       target="_blank" th:data-key="${document.key}"
+                       th:href="@{/collection/__${collection.id}__/document/__${document.id}__}"
+                       th:text="${document.name}"></a>
+                    <a class="ms-2 text-muted text-decoration-none"
+                       th:href="@{/collection/__${collection.id}__/document/__${document.id}__/download}">
+                        <span th:insert="~{_general.html :: download-icon}" th:remove="tag"></span>
+                    </a>
+                    <a class="ms-1 text-muted text-decoration-none"
+                       href="#"
+                       th:data-document-id="${document.id}"
+                       th:data-document-name="${document.name}"
+                       th:if="${isAdmin}"
+                       th:onclick="'deleteDocument(this,'+${collection.id}+')'">
+                        <span th:insert="~{_general.html :: trash-icon}" th:remove="tag"></span>
+                    </a>
+                    <div class="d-none" th:text="${document.key}"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-12" th:if="${isAdmin}">
+            <form class="dropzone" id="dropzone" th:action="@{/admin/collection/__${collection.id}__}"></form>
+            <div class="mt-4 small" th:utext="${customization.getHelpOrder()}">
+            </div>
+        </div>
+    </div>
+    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+</div>
+<script th:if="${isAdmin}"
+        th:inline="javascript"
+        th:with="collectionUrl=@{/admin/collection/__${collection.id}__}">
+    /*<![CDATA[*/
+    function deleteDocument(source, collectionId) {
+        let documentId = source.getAttribute("data-document-id");
+        let documentName = source.getAttribute("data-document-name");
+        let confirmed = confirm("Wollen Sie das Dokument " + documentName + " wirklich löschen?");
+        if (confirmed) {
+            let form = document.createElement("form");
+            form.setAttribute("method", "post");
+            form.setAttribute("action", "[(${collectionUrl})]/document/" + documentId + "/delete");
+            form.setAttribute("id", "VNL67zbZaLdU");
+            document.body.appendChild(form);
+            let input = document.createElement("input");
+            input.setAttribute("type", "hidden")
+            input.setAttribute("name", "_csrf");
+            input.setAttribute("value", [[${_csrf.token}]]);
+            form.appendChild(input);
+            form.submit();
+        }
+    }
+
+    /*]]>*/
+</script>
+<script th:if="${isAdmin}">
+    Dropzone.options.dropzone = {
+        init: function () {
+            this.on("queuecomplete", function () {
+                location.reload();
+            });
+        }
+    }
+</script>
+</body>
+</html>

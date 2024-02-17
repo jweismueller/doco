@@ -1,0 +1,32 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /doco
+spring:
+  thymeleaf:
+    prefix: file:src/main/resources/templates/
+    cache: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/doco
+    username: doco
+    password: doco
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 50MB
+  web:
+    resources:
+      cache-period: 0
+      static-locations: file:src/main/resources/static/
+de:
+  weismueller:
+    doco:
+      path-documents:
+      customization-file:
+      collection-order:
+      document-order:
+      document-agenda-item-keyword:

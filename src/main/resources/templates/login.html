@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head th:insert="_general.html :: head" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div class="my-3">
+        <div th:if="${param.error}" th:text="#{login.msg.error}">
+        </div>
+        <div th:if="${param.logout}" th:text="#{login.msg.logout}">
+        </div>
+        <div th:if="${param.changePassword}" th:text="#{login.msg.changepassword}">
+        </div>
+    </div>
+    <div class="text-center">
+        <h1 class="h3 mb-3 font-weight-normal text-muted" form-signin th:text="#{login.headline}"></h1>
+        <form class="" method="post" style="max-width: 330px; width: 100%; margin: auto"
+              th:action="@{/login}">
+            <div class="my-2">
+                <label class="d-block d-sm-none" for="username" th:text="#{login.label.username}"></label>
+                <input autofocus class="form-control" id="username" name="username" placeholder="E-Mail" required
+                       type="email"/>
+            </div>
+            <div class="my-2">
+                <label class="d-block d-sm-none" for="password" th:text="#{login.label.password}"></label>
+                <input class="form-control" id="password" name="password" required
+                       th:placeholder="#{login.label.password}"
+                       type="password"/>
+            </div>
+            <div>
+                <button class="btn btn-primary mt-2" th:text="#{login.label.submit}" type="submit"></button>
+            </div>
+        </form>
+        <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+    </div>
+</div>
+</body>
