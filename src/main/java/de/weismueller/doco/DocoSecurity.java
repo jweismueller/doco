@@ -66,9 +66,9 @@ public class DocoSecurity {
         auth.jdbcAuthentication()
                 .dataSource(dataSource)
                 .passwordEncoder(encoder)
-                .usersByUsernameQuery("SELECT username, password, enabled from users where username = ?")
+                .usersByUsernameQuery("SELECT username, password, enabled from user where username = ?")
                 .authoritiesByUsernameQuery(
-                        "SELECT u.username, a.authority " + "FROM user_authorities a, users u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
+                        "SELECT u.username, a.authority " + "FROM user_authority a, users u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
         auth.userDetailsService(userDetailsService);
     }
 

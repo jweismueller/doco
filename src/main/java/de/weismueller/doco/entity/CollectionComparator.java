@@ -44,7 +44,7 @@ public class CollectionComparator implements Comparator<Collection> {
         Set<Map.Entry<String, String>> entries = collectionOrder.entrySet();
         String colSortKey = "z";
         for (Map.Entry<String, String> entry : entries) {
-            Matcher matcher = Pattern.compile(entry.getValue()).matcher(o.getName());
+            Matcher matcher = Pattern.compile(entry.getValue()).matcher(o.getTitle());
             if (matcher.matches()) {
                 colSortKey = entry.getKey();
                 break;

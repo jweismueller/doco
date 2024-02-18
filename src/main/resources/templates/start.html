@@ -5,7 +5,7 @@
 <head th:insert="_general.html :: head" th:remove="tag">></head>
 <body>
 <div class="container">
-    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
     <h1 class="my-3 text-secondary">
         <span th:text="#{start.headline}"></span>
         <a class="text-decoration-none ms-2 text-muted"
@@ -19,19 +19,19 @@
         <h2 class="mb-3" style="font-size:120%;">
             <a class="collection text-decoration-none"
                th:attrappend="class=' '+${collection.cssClass}"
-               th:href="@{/collection/__${collection.id}__}"
+               th:href="@{/library/__${collection.library.id}__/collection/__${collection.id}__}"
                th:style="'color:' + ${customization.brandColor}"
-               th:text="${collection.name}">
+               th:text="${collection.title}">
             </a>
             <a class="text-decoration-none ms-2 text-muted"
-               style="vertical-align: text-top;" th:href="@{/admin/collection/__${collection.id}__}"
+               style="vertical-align: text-top;" th:href="@{/admin/library/__${collection.library.id}__/collection/__${collection.id}__}"
                th:if="${isAdmin}">
                 <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
                 <span th:insert="~{_general.html :: trash-icon}" th:remove="tag"></span>
             </a>
         </h2>
     </div>
-    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
 </div>
 </body>
 </html>

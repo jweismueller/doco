@@ -85,53 +85,52 @@ public class AdminController {
         return "admin/user";
     }
 
-    @GetMapping("/admin/collection")
+    @GetMapping("/admin/library/{libraryId}/collection")
     public String getAdminCollection(Model model) {
         model.addAttribute("collection", new Collection());
         return "admin/collection";
     }
 
-    @GetMapping("/admin/collection/{id}")
-    public String getCollection(@PathVariable("id") Integer id, Model model) {
-        Optional<Collection> collection = collectionController.loadCollection(id);
+    @GetMapping("/admin/library/{libraryId}/collection/{collectionId}")
+    public String getCollection(@PathVariable("libraryId") Integer libraryId,
+                                @PathVariable("collectionId") Integer collectionId,
+                                Model model) {
+        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
         if (collection.isEmpty()) {
-            log.error("Collection with id {} not available.", id);
+            log.error("Collection with id {} not available.", collectionId);
         }
         model.addAttribute("collection", collection.get());
         return "admin/collection";
     }
 
-    @PostMapping("/admin/collection/{id}/document/{documentId}/delete")
-    public String deleteDocument(@PathVariable("id") Integer id, @PathVariable("documentId") String documentId,
-            Model model) {
-        Optional<Collection> collection = collectionController.loadCollection(id);
+    @PostMapping("/admin/library/{libraryId}/collection/{collectionId}/document/{documentId}/delete")
+    public String deleteDocument(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId, Model model) {
+        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
         if (collection.isEmpty()) {
-            log.error("Collection with id {} not available.", id);
+            log.error("Collection with id {} not available.", collectionId);
         }
-        Optional<Document> first = collection.get()
-                .getDocuments()
-                .stream()
-                .filter(d -> d.getId().equals(documentId))
-                .findAny();
+        Optional<Document> first = collection.get().getDocuments().stream().filter(d -> d.getId().equals(documentId)).findAny();
         if (first.isEmpty()) {
-            log.error("Document inside collection {} with id {} not available.", id, documentId);
+            log.error("Document inside collection {} with id {} not available.", collectionId, documentId);
         }
-        Path pathFile = Path.of(properties.getPathDocuments(), collection.get().getPhysicalFolder(),
-                first.get().getName());
+        Path pathFile = Path.of(properties.getPathDocuments(), collection.get().getPhysicalFolder(), first.get().getName());
         try {
             Files.delete(pathFile);
         } catch (Exception e) {
             log.error("Error deleting file " + pathFile + " from disk: " + e.toString());
         }
-        String redirect = String.format("redirect:/collection/%d", id);
+        String redirect = String.format("redirect:/library/%d/collection/%d", libraryId, collectionId);
         return redirect;
     }
 
-    @PostMapping(value = "/admin/collection", consumes = "application/x-www-form-urlencoded")
-    public String postCollection(Model model, Authentication authentication, @RequestBody MultiValueMap body) {
+    @PostMapping(value = "/admin/library/{libraryId}/collection", consumes = "application/x-www-form-urlencoded")
+    public String postCollection(@PathVariable("libraryId") Integer libraryId,
+                                 Model model,
+                                 Authentication authentication,
+                                 @RequestBody MultiValueMap body) {
         String collectionDate = String.valueOf(body.getFirst("collectionDate"));
         String collectionTime = String.valueOf(body.getFirst("collectionTime"));
-        String collectionName = String.valueOf(body.getFirst("collectionName"));
+        String collectionTitle = String.valueOf(body.getFirst("collectionTitle"));
         String collectionId = String.valueOf(body.getFirst("collectionId"));
         boolean collectionEnabled = "on".equals(String.valueOf(body.getFirst("collectionEnabled")));
         //
@@ -145,8 +144,7 @@ public class AdminController {
             collection.setCreatedAt(LocalDateTime.now());
             collection.setCreatedBy(authentication.getName());
             collection.setEnabled(true);
-            String digestAsHex = DigestUtils.md5DigestAsHex(collectionName.getBytes(StandardCharsets.UTF_8))
-                    .substring(0, 8);
+            String digestAsHex = DigestUtils.md5DigestAsHex(collectionTitle.getBytes(StandardCharsets.UTF_8)).substring(0, 8);
             collection.setPhysicalFolder(digestAsHex);
         }
         collection.setDate(LocalDate.parse(collectionDate));
@@ -157,25 +155,26 @@ public class AdminController {
         }
         collection.setModifiedAt(LocalDateTime.now());
         collection.setModifiedBy(authentication.getName());
-        collection.setName(collectionName);
+        collection.setTitle(collectionTitle);
         //
         collectionRepository.save(collection);
         //
         return "redirect:/";
     }
 
-    @PostMapping(value = "/admin/collection/{id}", consumes = "multipart/form-data")
-    public ResponseEntity<Void> uploadFile(@PathVariable("id") Integer id,
-            @RequestParam("file") MultipartFile file) throws Exception {
+    @PostMapping(value = "/admin/library/{libraryId}/collection/{collectionId}", consumes = "multipart/form-data")
+    public ResponseEntity<Void> uploadFile(@PathVariable("libraryId") Integer libraryId,
+                                           @PathVariable("collectionId") Integer collectionId,
+                                           @RequestParam("file") MultipartFile file) throws Exception {
         if (file.isEmpty()) {
             log.error("File is empty.");
             return ResponseEntity.notFound().build();
         }
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         log.info("Got file upload: " + fileName);
-        Optional<Collection> collection = collectionController.loadCollection(id);
+        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
         if (collection.isEmpty()) {
-            log.error("Collection with id {} not available.", id);
+            log.error("Collection with id {} not available.", collectionId);
             return ResponseEntity.notFound().build();
         }
         Path pathDir = Path.of(properties.getPathDocuments(), collection.get().getPhysicalFolder());
@@ -198,9 +197,7 @@ public class AdminController {
         String combinedChars = upperCaseLetters.concat(lowerCaseLetters).concat(numbers);
         List<Character> pwdChars = combinedChars.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
         Collections.shuffle(pwdChars);
-        String password = pwdChars.stream()
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-                .toString();
+        String password = pwdChars.stream().collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
         return password;
     }
 

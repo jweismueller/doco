@@ -5,20 +5,20 @@
 <head th:insert="_general.html :: head" th:remove="tag">></head>
 <body>
 <div class="container">
-    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
     <h1 class="my-3 text-secondary"
         th:attr="folder=${collection.physicalFolder}"
-        th:text="${collection.name}"></h1>
+        th:text="${collection.title}"></h1>
     <div class="row">
         <div class="col">
             <div th:each="document:${collection.getDocuments()}">
                 <div class="my-3">
                     <a class="text-decoration-none"
                        target="_blank" th:data-key="${document.key}"
-                       th:href="@{/collection/__${collection.id}__/document/__${document.id}__}"
+                       th:href="@{/library/__${collection.library.id}__/collection/__${collection.id}__/document/__${document.id}__}"
                        th:text="${document.name}"></a>
                     <a class="ms-2 text-muted text-decoration-none"
-                       th:href="@{/collection/__${collection.id}__/document/__${document.id}__/download}">
+                       th:href="@{/library/__${collection.library.id}__/collection/__${collection.id}__/document/__${document.id}__/download}">
                         <span th:insert="~{_general.html :: download-icon}" th:remove="tag"></span>
                     </a>
                     <a class="ms-1 text-muted text-decoration-none"
@@ -34,16 +34,16 @@
             </div>
         </div>
         <div class="col-lg-3 col-sm-12" th:if="${isAdmin}">
-            <form class="dropzone" id="dropzone" th:action="@{/admin/collection/__${collection.id}__}"></form>
+            <form class="dropzone" id="dropzone" th:action="@{/admin/library/__${collection.library.id}__/collection/__${collection.id}__}"></form>
             <div class="mt-4 small" th:utext="${customization.getHelpOrder()}">
             </div>
         </div>
     </div>
-    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
 </div>
 <script th:if="${isAdmin}"
         th:inline="javascript"
-        th:with="collectionUrl=@{/admin/collection/__${collection.id}__}">
+        th:with="collectionUrl=@{/admin/library/__${collection.library.id}__/collection/__${collection.id}__}">
     /*<![CDATA[*/
     function deleteDocument(source, collectionId) {
         let documentId = source.getAttribute("data-document-id");

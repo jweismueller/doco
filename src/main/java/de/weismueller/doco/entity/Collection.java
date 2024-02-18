@@ -38,13 +38,13 @@ public class Collection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column
-    private Integer libraryId;
+    @ManyToOne
+    private Library library;
     @Transient
     private SortedSet<Document> documents = new TreeSet<>();
     @Transient
     private String cssClass;
-    private String name;
+    private String title;
     private String physicalFolder;
     private LocalDate date;
     private LocalTime time;

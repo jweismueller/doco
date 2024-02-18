@@ -17,10 +17,8 @@
 package de.weismueller.doco.controller;
 
 import de.weismueller.doco.DocoProperties;
-import de.weismueller.doco.entity.Document;
-import de.weismueller.doco.entity.Collection;
-import de.weismueller.doco.entity.CollectionRepository;
-import de.weismueller.doco.entity.DocumentComparator;
+import de.weismueller.doco.DocoUser;
+import de.weismueller.doco.entity.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -49,32 +47,39 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CollectionController {
 
+    private final LibraryRepository libraryRepository;
     private final CollectionRepository collectionRepository;
     private final DocoProperties properties;
 
-    @GetMapping("/collection/{id}")
-    public String collection(@PathVariable("id") Integer id, Model model) {
-        Optional<Collection> collection = loadCollection(id);
+    @GetMapping("/library/{libraryId}/collection/{collectionId}")
+    public String collection(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, Model model) {
+        DocoUser user = (DocoUser) model.getAttribute("currentUser");
+        if (!user.hasLibraryAccess(libraryId)) {
+            log.error("User {} has no access to library {}", user.getUsername(), libraryId);
+            return "redirect:/";
+        }
+        Optional<Library> library = libraryRepository.findById(libraryId);
+        Optional<Collection> collection = loadCollection(libraryId, collectionId);
         if (collection.isPresent()) {
             model.addAttribute("collection", collection.get());
         }
         return "collection";
     }
 
-    @GetMapping("/collection/{id}/document/{documentId}")
-    public String fileRedirect(@PathVariable("id") Integer id, @PathVariable("documentId") String documentId, Model model) {
-        Optional<Document> document = loadDocument(id, documentId);
+    @GetMapping("/library/{libraryId}/collection/{collectionId}/document/{documentId}")
+    public String fileRedirect(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId, Model model) {
+        Optional<Document> document = loadDocument(libraryId, collectionId, documentId);
         if (document.isEmpty()) {
             return "redirect:/";
         }
         String encodedTitle = URLEncoder.encode(document.get().getName(), StandardCharsets.UTF_8);
-        String redirect = String.format("redirect:/collection/%d/document/%s/%s", id, documentId, encodedTitle);
+        String redirect = String.format("redirect:/library/%d/collection/%d/document/%s/%s", libraryId, collectionId, documentId, encodedTitle);
         return redirect;
     }
 
-    @GetMapping("/collection/{id}/document/{documentId}/{name}")
-    public ResponseEntity<Resource> getDocument(@PathVariable("id") Integer id, @PathVariable("documentId") String documentId, @PathVariable("name") String name, Model model) {
-        Optional<Document> document = loadDocument(id, documentId);
+    @GetMapping("/library/{libraryId}/collection/{collectionId}/document/{documentId}/{name}")
+    public ResponseEntity<Resource> getDocument(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId, @PathVariable("name") String name, Model model) {
+        Optional<Document> document = loadDocument(libraryId, collectionId, documentId);
         if (document.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -88,7 +93,7 @@ public class CollectionController {
         try {
             resource = new ByteArrayResource(Files.readAllBytes(document.get().getPath()));
         } catch (IOException e) {
-            log.error("Error accessing collection {} with document {}: " + e.toString(), id, documentId);
+            log.error("Error accessing collection {} with document {}: " + e.toString(), collectionId, documentId);
             return ResponseEntity.notFound().build();
         }
         long fileLength = document.get().getPath().toFile().length();
@@ -101,8 +106,8 @@ public class CollectionController {
         return builder.body(resource);
     }
 
-    private Optional<Document> loadDocument(Integer id, String documentId) {
-        Optional<Collection> collection = loadCollection(id);
+    private Optional<Document> loadDocument(Integer libraryId, Integer collectionId, String documentId) {
+        Optional<Collection> collection = loadCollection(libraryId, collectionId);
         Document document = null;
         if (collection.isPresent() && documentId != null) {
             return collection.get().getDocuments().stream().filter(e -> e.getId().equals(documentId)).findAny();
@@ -110,15 +115,18 @@ public class CollectionController {
         return Optional.empty();
     }
 
-    public Optional<Collection> loadCollection(Integer id) {
-        Optional<Collection> collection = collectionRepository.findById(id);
+    public Optional<Collection> loadCollection(Integer libraryId, Integer collectionId) {
+        Optional<Collection> collection = collectionRepository.findById(collectionId);
         if (!collection.isPresent()) {
             return collection;
+        }
+        if (!collection.get().getLibrary().getId().equals(libraryId)) {
+            return Optional.empty();
         }
         try {
             loadDocuments(collection.get());
         } catch (Exception e) {
-            log.error("Error accessing collection with id: " + id);
+            log.error("Error accessing collection with id: " + collectionId);
             log.error(e.toString()); // no stack trace necessary
         }
         return collection;

@@ -16,7 +16,10 @@
 
 package de.weismueller.doco;
 
-import de.weismueller.doco.entity.*;
+import de.weismueller.doco.entity.User;
+import de.weismueller.doco.entity.UserAuthorityRepository;
+import de.weismueller.doco.entity.UserLibraryRepository;
+import de.weismueller.doco.entity.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +29,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +40,7 @@ public class DocoUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserAuthorityRepository userAuthorityRepository;
-    private final LibraryUserRepository libraryUserRepository;
+    private final UserLibraryRepository userLibraryRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -46,7 +48,7 @@ public class DocoUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username " + username + " not found"));
         DocoUser doco = new DocoUser(user.getUsername(), user.getPassword(),
                 getGrantedAuthorities(getPrivileges(user.getId())));
-        libraryUserRepository.findByUserId(user.getId()).forEach(libraryUser -> doco.addLibrary(libraryUser));
+        userLibraryRepository.findByUserId(user.getId()).forEach(libraryUser -> doco.addLibrary(libraryUser));
         return doco;
     }
 
