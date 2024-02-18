@@ -4,7 +4,7 @@
 <head th:insert="_general.html :: head" th:remove="tag">></head>
 <body>
 <div class="container">
-    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
     <h1 class="my-3 text-secondary" th:text="#{user.headline}"></h1>
     <div style="max-width: 550px; width: 100%;">
         <div class="my-3" role="alert">
@@ -36,7 +36,7 @@
             </div>
         </form>
     </div>
-    <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
 </div>
 </body>
 </html>

@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LibraryUser {
+public class UserLibrary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

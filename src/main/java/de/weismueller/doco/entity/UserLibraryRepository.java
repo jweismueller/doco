@@ -20,8 +20,8 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface LibraryUserRepository extends CrudRepository<LibraryUser, Integer> {
+public interface UserLibraryRepository extends CrudRepository<UserLibrary, Integer> {
 
-    List<LibraryUser> findByUserId(Integer userId);
+    List<UserLibrary> findByUserId(Integer userId);
 
 }

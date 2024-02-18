@@ -16,11 +16,13 @@
 
 package de.weismueller.doco.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 @Entity
-@Table(name = "user_authorities")
 @Data
 public class UserAuthority {
 

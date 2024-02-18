@@ -31,7 +31,7 @@
                 <button class="btn btn-primary mt-2" th:text="#{login.label.submit}" type="submit"></button>
             </div>
         </form>
-        <footer th:insert="_general.html :: footer" th:remove="tag"></footer>
+        <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
     </div>
 </div>
 </body>
