@@ -16,6 +16,7 @@
 
 package de.weismueller.doco;
 
+import de.weismueller.doco.entity.Library;
 import de.weismueller.doco.entity.UserLibrary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -40,6 +41,10 @@ public class DocoUser extends User {
 
     public List<Integer> getLibraryIds() {
         return this.userLibraryList.stream().map(userLibrary -> userLibrary.getLibrary().getId()).toList();
+    }
+
+    public List<Library> getLibraries() {
+        return this.userLibraryList.stream().map(userLibrary -> userLibrary.getLibrary()).toList();
     }
 
     public boolean hasLibraryAccess(Integer libraryId) {
