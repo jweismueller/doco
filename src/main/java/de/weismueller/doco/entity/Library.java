@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 
 package de.weismueller.doco.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -44,5 +42,7 @@ public class Library {
     private String modifiedBy;
     private LocalDateTime modifiedAt;
     private Boolean enabled = true;
+    @Transient
+    private List<Collection> collectionList;
 
 }

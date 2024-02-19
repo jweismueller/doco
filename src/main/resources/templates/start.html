@@ -24,7 +24,8 @@
                th:text="${collection.title}">
             </a>
             <a class="text-decoration-none ms-2 text-muted"
-               style="vertical-align: text-top;" th:href="@{/admin/library/__${collection.library.id}__/collection/__${collection.id}__}"
+               style="vertical-align: text-top;"
+               th:href="@{/admin/library/__${collection.library.id}__/collection/__${collection.id}__}"
                th:if="${isAdmin}">
                 <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
                 <span th:insert="~{_general.html :: trash-icon}" th:remove="tag"></span>

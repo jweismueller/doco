@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ public class CollectionComparator implements Comparator<Collection> {
     }
 
     private String key(Collection o) {
-        String key = o.getDate().toString() + "_";
+        String key = o.getLibrary().getTitle() + "_";
+        key += o.getDate().toString() + "_";
         key += (o.getTime() == null ? "00:00" : o.getTime().toString()) + "_";
         Set<Map.Entry<String, String>> entries = collectionOrder.entrySet();
         String colSortKey = "z";

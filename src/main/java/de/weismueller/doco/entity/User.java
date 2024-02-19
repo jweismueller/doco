@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package de.weismueller.doco.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -29,11 +26,30 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    @Column(length = 64)
     private String username;
-
+    @Column(length = 128)
     private String password;
-
+    @Column
     private boolean enabled;
+    @Column(length = 64)
+    private String firstName;
+    @Column(length = 64)
+    private String lastName;
+    @Enumerated(EnumType.STRING)
+    private TitleType title;
+
+    enum TitleType {
+        NONE(""), DR("Dr."), PROF("Prof."), PROF_DR("Prof. Dr.");
+        String display;
+
+        TitleType(String display) {
+            this.display = display;
+        }
+        public String getDisplay() {
+            return display;
+        }
+    }
+
 
 }
