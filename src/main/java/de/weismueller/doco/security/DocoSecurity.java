@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.weismueller.doco;
+package de.weismueller.doco.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +34,11 @@ import javax.sql.DataSource;
 public class DocoSecurity {
 
     private DataSource dataSource;
+    private DocoAuthenticationProvider authenticationProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+        //
         http.authorizeHttpRequests((auth) -> auth
 
                 .requestMatchers("/js/**", "/css/**", "/images/**")
@@ -48,11 +49,11 @@ public class DocoSecurity {
                 .authenticated()
 
         );
-
+        //
         http.csrf(c -> c.ignoringRequestMatchers("/admin/**"));
         http.logout(logout -> logout.logoutUrl("/logout").permitAll());
         http.formLogin(formLogin -> formLogin.loginPage("/login").permitAll());
-
+        //
         return http.build();
     }
 
@@ -62,50 +63,17 @@ public class DocoSecurity {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth, PasswordEncoder encoder, DocoUserDetailsService userDetailsService) throws Exception {
+    public void configureGlobal(AuthenticationManagerBuilder auth, PasswordEncoder encoder,
+            DocoAuthenticationProvider authenticationProvider) throws Exception {
+        //
         auth.jdbcAuthentication()
                 .dataSource(dataSource)
                 .passwordEncoder(encoder)
                 .usersByUsernameQuery("SELECT username, password, enabled from user where username = ?")
                 .authoritiesByUsernameQuery(
-                        "SELECT u.username, a.authority " + "FROM user_authority a, users u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
-        auth.userDetailsService(userDetailsService);
+                        "SELECT u.username, a.authority " + "FROM user_authority a, user u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
+        //
+        auth.authenticationProvider(authenticationProvider);
     }
-
-    /*
-
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .passwordEncoder(passwordEncoder())
-                .usersByUsernameQuery("SELECT username, password, enabled from users where username = ?")
-                .authoritiesByUsernameQuery(
-                        "SELECT u.username, a.authority " + "FROM user_authorities a, users u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
-    }
-
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/js/**", "/css/**", "/images/**")
-                .permitAll()
-                // this is necessary to forward the ?changePassword parameter to the login page
-                .antMatchers("/login")
-                .permitAll()
-                .antMatchers("/imprint")
-                .permitAll()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .formLogin()
-                .loginPage("/login")
-                .permitAll()
-                .and()
-                .logout()
-                .logoutUrl("/logout")
-                .permitAll()
-                .and()
-                .csrf()
-                .ignoringAntMatchers("/admin/**");
-    }
-    */
 
 }

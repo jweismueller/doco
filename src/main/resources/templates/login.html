@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html>
-<head th:insert="_general.html :: head" th:remove="tag">></head>
+<head th:insert="~{_general.html :: head}" th:remove="tag">></head>
 <body>
 <div class="container">
-    <div th:insert="_general.html :: header" th:remove="tag"></div>
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
     <div class="my-3">
         <div th:if="${param.error}" th:text="#{login.msg.error}">
         </div>

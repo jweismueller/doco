@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import de.weismueller.doco.entity.UserLibrary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class DocoUser extends User {
 
-    private List<UserLibrary> userLibraryList;
+    private List<UserLibrary> userLibraryList = new ArrayList<>();
 
     public DocoUser(String username, String password, Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
