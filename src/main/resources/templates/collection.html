@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="isAdmin" type="java.lang.Boolean"*/-->
 <!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
-<head th:insert="_general.html :: head" th:remove="tag">></head>
+<head th:insert="~{_general.html :: head}" th:remove="tag">></head>
 <body>
 <div class="container">
     <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
