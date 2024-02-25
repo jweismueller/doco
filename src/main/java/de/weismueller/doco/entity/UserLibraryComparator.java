@@ -16,29 +16,15 @@
 
 package de.weismueller.doco.entity;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Comparator;
 
-@Entity
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserLibrary {
+public class UserLibraryComparator implements Comparator<UserLibrary> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private LibraryComparator libraryComparator = new LibraryComparator();
 
-    @Column
-    private Integer userId;
+    @Override
+    public int compare(UserLibrary o1, UserLibrary o2) {
+        return libraryComparator.compare(o1.getLibrary(), o2.getLibrary());
+    }
 
-    @ManyToOne
-    private Library library;
-
-    @Transient
-    private boolean transientSelected = false;
 }

@@ -32,14 +32,18 @@ public class CollectionComparator implements Comparator<Collection> {
     private final Map<String, String> collectionOrder = new TreeMap<>();
 
     public CollectionComparator(DocoProperties properties) {
-        int n = properties.getCollectionOrder().size();
-        for (int i = 0; i < n; i++) {
-            collectionOrder.put(String.valueOf((char) ('a' + i)), properties.getCollectionOrder().get(i));
+        if (properties.getCollectionOrder() == null) {
+            collectionOrder.put(String.valueOf((char) ('a')), ".*");
+        } else {
+            int n = properties.getCollectionOrder().size();
+            for (int i = 0; i < n; i++) {
+                collectionOrder.put(String.valueOf((char) ('a' + i)), properties.getCollectionOrder().get(i));
+            }
         }
     }
 
     private String key(Collection o) {
-        String key = o.getLibrary().getTitle() + "_";
+        String key = "";
         key += o.getDate().toString() + "_";
         key += (o.getTime() == null ? "00:00" : o.getTime().toString()) + "_";
         Set<Map.Entry<String, String>> entries = collectionOrder.entrySet();

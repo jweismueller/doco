@@ -37,19 +37,6 @@ public class User {
     @Column(length = 64)
     private String lastName;
     @Enumerated(EnumType.STRING)
-    private TitleType title;
-
-    enum TitleType {
-        NONE(""), DR("Dr."), PROF("Prof."), PROF_DR("Prof. Dr.");
-        String display;
-
-        TitleType(String display) {
-            this.display = display;
-        }
-        public String getDisplay() {
-            return display;
-        }
-    }
-
+    private UserTitleType title;
 
 }

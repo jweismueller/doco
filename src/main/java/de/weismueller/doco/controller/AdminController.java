@@ -16,10 +16,12 @@
 
 package de.weismueller.doco.controller;
 
+import com.google.common.collect.Streams;
 import de.weismueller.doco.DocoProperties;
-import de.weismueller.doco.DocoUser;
 import de.weismueller.doco.entity.*;
+import de.weismueller.doco.entity.Collection;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,11 +45,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @Slf4j
@@ -58,20 +58,107 @@ public class AdminController {
     private final CollectionRepository collectionRepository;
     private final LibraryRepository libraryRepository;
     private final UserRepository userRepository;
+    private final UserLibraryRepository userLibraryRepository;
     private final DocoProperties properties;
     private final CollectionController collectionController;
     private final ServletContext servletContext;
     private final PasswordEncoder encoder;
 
+    @GetMapping("/admin")
+    public String getAdmin(Model model) {
+        return "admin/admin";
+    }
+
+    @GetMapping("/admin/library")
+    public String getAdminLibraryList(Model model, HttpServletRequest request, Authentication authentication) {
+        boolean isNew = Streams.stream(request.getParameterNames().asIterator()).anyMatch("new"::equals);
+        if (isNew) {
+            model.addAttribute("library", new Library());
+        } else {
+            List<Library> libraries = new ArrayList<>();
+            libraryRepository.findAll().iterator().forEachRemaining(libraries::add);
+            Collections.sort(libraries, new LibraryComparator());
+            model.addAttribute("libraries", libraries);
+        }
+        return "admin/library";
+    }
+
+    @GetMapping("/admin/library/{id}")
+    public String getAdminLibraryById(@PathVariable("id") Integer id, Model model) {
+        libraryRepository.findById(id).ifPresent(l -> model.addAttribute("library", l));
+        final List<Collection> collections = new ArrayList<>();
+        collectionRepository.findAll().iterator().forEachRemaining(c -> {
+            if (!c.getEnabled()) {
+                c.setTransientCssClass("text-black-25");
+            }
+            collections.add(c);
+        });
+        Collections.sort(collections, new CollectionComparator(properties));
+        model.addAttribute("collections", collections);
+        model.addAttribute("selectedCollections", libraryRepository.findById(id)
+                .get()
+                .getCollections()
+                .stream()
+                .map(c -> c.getId())
+                .collect(Collectors.toSet()));
+        return "admin/library";
+    }
+
+    @GetMapping("/admin/user")
+    public String getAdminUserList(Model model, HttpServletRequest request, Authentication authentication) {
+        boolean isNew = Streams.stream(request.getParameterNames().asIterator()).anyMatch("new"::equals);
+        if (isNew) {
+            model.addAttribute("user", new User());
+        } else {
+            List<User> users = new ArrayList<>();
+            userRepository.findAll().iterator().forEachRemaining(users::add);
+            Collections.sort(users, new UserComparator());
+            model.addAttribute("users", users);
+            Map<Integer, Library> libraryMap = new HashMap<>();
+            userLibraryRepository.findAll().forEach(ul -> {
+                if (!libraryMap.containsKey(ul.getLibrary().getId())) {
+                    libraryMap.put(ul.getLibrary().getId(), ul.getLibrary());
+                }
+                userRepository.findById(ul.getUserId()).ifPresent(u -> {
+                    if (u.isEnabled()) {
+                        libraryMap.get(ul.getLibrary().getId()).getTransientUsers().add(u);
+                    }
+                });
+            });
+            List<Library> libraries = libraryMap.values().stream().collect(Collectors.toList());
+            Collections.sort(libraries, new LibraryComparator());
+            model.addAttribute("libraries", libraries);
+        }
+        return "admin/user";
+    }
+
     @GetMapping("/admin/user/{id}")
-    public String getAdminUser(@PathVariable("id") Integer id, Model model) {
+    public String getAdminUserById(@PathVariable("id") Integer id, Model model) {
         Optional<User> byId = userRepository.findById(id);
         model.addAttribute("user", byId.get());
+        Set<Integer> libraryIds = userLibraryRepository.findByUserId(id)
+                .stream()
+                .map(u -> u.getLibrary().getId())
+                .collect(Collectors.toSet());
+        List<UserLibrary> collect = userLibraryRepository.findByUserId(id).stream().map(l -> {
+            l.setTransientSelected(true);
+            return l;
+        }).collect(Collectors.toList());
+        libraryRepository.findAll().forEach(l -> {
+            if (!libraryIds.contains(l.getId())) {
+                UserLibrary userLibrary = new UserLibrary();
+                userLibrary.setLibrary(l);
+                userLibrary.setTransientSelected(false);
+                collect.add(userLibrary);
+            }
+        });
+        Collections.sort(collect, new UserLibraryComparator());
+        model.addAttribute("userLibraries", collect);
         return "admin/user";
     }
 
     @PostMapping("/admin/user/{id}/resetPassword")
-    public String postAdminResetPassword(@PathVariable("id") Integer id, Model model) {
+    public String postAdminUserResetPassword(@PathVariable("id") Integer id, Model model) {
         Optional<User> byId = userRepository.findById(id);
         User user = byId.get();
         String newPassword = generatePassword();
@@ -82,44 +169,87 @@ public class AdminController {
         return "admin/user";
     }
 
-    @GetMapping("/admin/user")
-    public String getAdminUsers(Model model) {
-        List<User> users = new ArrayList<>();
-        userRepository.findAll().iterator().forEachRemaining(users::add);
-        Collections.sort(users, new UserComparator());
-        model.addAttribute("users", users);
-        return "admin/user";
+    @PostMapping("/admin/user")
+    public String postAdminUser(Model model, @RequestBody MultiValueMap body) {
+        String firstName = String.valueOf(body.getFirst("firstName"));
+        String lastName = String.valueOf(body.getFirst("lastName"));
+        String title = String.valueOf(body.getFirst("userTitle"));
+        String userId = String.valueOf(body.getFirst("userId"));
+        String username = String.valueOf(body.getFirst("username"));
+        boolean userEnabled = "on".equals(String.valueOf(body.getFirst("userEnabled")));
+        User user;
+        if (StringUtils.hasText(userId)) {
+            user = userRepository.findById(Integer.parseInt(userId)).get();
+            user.setEnabled(userEnabled);
+        } else {
+            user = new User();
+            user.setEnabled(true);
+            user.setPassword(encoder.encode(generatePassword()));
+            user.setUsername(username);
+        }
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setTitle(UserTitleType.valueOf(title));
+        User saved = userRepository.save(user);
+        String redirect = String.format("redirect:/admin/user/%d", saved.getId());
+        return redirect;
+    }
+
+    @PostMapping("/admin/user/{id}/userLibraries")
+    public String postAdminUserLibraries(@PathVariable("id") Integer id, Model model, @RequestBody MultiValueMap body) {
+        Optional<User> byId = userRepository.findById(id);
+        User user = byId.get();
+        Set<Integer> libraryIdsActive = new HashSet<>();
+        body.remove("_csrf");
+        body.keySet().forEach(k -> libraryIdsActive.add(Integer.parseInt(k.toString())));
+        List<UserLibrary> userLibraries = userLibraryRepository.findByUserId(id);
+        // delete all user libraries that are not in the active list
+        userLibraries.forEach(ul -> {
+            if (!libraryIdsActive.contains(ul.getLibrary().getId())) {
+                userLibraryRepository.delete(ul);
+            }
+        });
+        // create user libraries that are in the active list but not in the user libraries
+        libraryIdsActive.forEach(l -> {
+            if (userLibraries.stream().noneMatch(ul -> ul.getLibrary().getId().equals(l))) {
+                UserLibrary userLibrary = new UserLibrary();
+                userLibrary.setLibrary(libraryRepository.findById(l).get());
+                userLibrary.setUserId(id);
+                userLibraryRepository.save(userLibrary);
+            }
+        });
+        String redirect = String.format("redirect:/admin/user/%d", id);
+        return redirect;
     }
 
     @GetMapping("/admin/collection")
-    public String getAdminCollection(Model model, Authentication authentication) {
-        DocoUser user = (DocoUser) authentication.getPrincipal();
-        model.addAttribute("collection", new Collection());
-        model.addAttribute("libraries", user.getLibraries());
+    public String getAdminCollectionList(Model model, HttpServletRequest request, Authentication authentication) {
+        boolean isNew = Streams.stream(request.getParameterNames().asIterator()).anyMatch("new"::equals);
+        model.addAttribute("libraries", libraryRepository.findAll());
+        if (isNew) {
+            model.addAttribute("collection", new Collection());
+        } else {
+            model.addAttribute("collections", collectionRepository.findAll());
+        }
         return "admin/collection";
     }
 
-    @GetMapping("/admin/library/{libraryId}/collection/{collectionId}")
-    public String getCollection(@PathVariable("libraryId") Integer libraryId,
-            @PathVariable("collectionId") Integer collectionId, Model model) {
-        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
-        if (collection.isEmpty()) {
-            log.error("Collection with id {} not available.", collectionId);
-        }
+    @GetMapping("/admin/collection/{collectionId}")
+    public String getAdminCollectionById(@PathVariable("collectionId") Integer collectionId, Model model) {
+        Optional<Collection> collection = collectionController.loadCollection(collectionId);
         model.addAttribute("collection", collection.get());
         return "admin/collection";
     }
 
-    @PostMapping("/admin/library/{libraryId}/collection/{collectionId}/document/{documentId}/delete")
-    public String deleteDocument(@PathVariable("libraryId") Integer libraryId,
-            @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId,
-            Model model) {
-        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
+    @PostMapping("/admin/collection/{collectionId}/document/{documentId}/delete")
+    public String deleteAdminDocument(@PathVariable("collectionId") Integer collectionId,
+            @PathVariable("documentId") String documentId, Model model) {
+        Optional<Collection> collection = collectionController.loadCollection(collectionId);
         if (collection.isEmpty()) {
             log.error("Collection with id {} not available.", collectionId);
         }
         Optional<Document> first = collection.get()
-                .getDocuments()
+                .getTransientDocuments()
                 .stream()
                 .filter(d -> d.getId().equals(documentId))
                 .findAny();
@@ -133,20 +263,17 @@ public class AdminController {
         } catch (Exception e) {
             log.error("Error deleting file " + pathFile + " from disk: " + e.toString());
         }
-        String redirect = String.format("redirect:/library/%d/collection/%d", libraryId, collectionId);
+        String redirect = String.format("redirect:/collection/%d", collectionId);
         return redirect;
     }
 
     @PostMapping(value = "/admin/collection", consumes = "application/x-www-form-urlencoded")
-    public String postCollection(Model model, Authentication authentication, @RequestBody MultiValueMap body) {
+    public String postAdminCollection(Model model, Authentication authentication, @RequestBody MultiValueMap body) {
         String collectionDate = String.valueOf(body.getFirst("collectionDate"));
         String collectionTime = String.valueOf(body.getFirst("collectionTime"));
         String collectionTitle = String.valueOf(body.getFirst("collectionTitle"));
         String collectionId = String.valueOf(body.getFirst("collectionId"));
-        String collectionLibraryId = String.valueOf(body.getFirst("collectionLibraryId"));
         boolean collectionEnabled = "on".equals(String.valueOf(body.getFirst("collectionEnabled")));
-        //
-        Library library = libraryRepository.findById(Integer.parseInt(collectionLibraryId)).get();
         //
         Collection collection = null;
         if (StringUtils.hasText(collectionId)) {
@@ -163,7 +290,6 @@ public class AdminController {
             collection.setPhysicalFolder(digestAsHex);
         }
         collection.setDate(LocalDate.parse(collectionDate));
-        collection.setLibrary(library);
         if (StringUtils.hasText(collectionTime)) {
             collection.setTime(LocalTime.parse(collectionTime));
         } else {
@@ -175,12 +301,11 @@ public class AdminController {
         //
         collectionRepository.save(collection);
         //
-        return "redirect:/";
+        return "redirect:/admin/collection";
     }
 
-    @PostMapping(value = "/admin/library/{libraryId}/collection/{collectionId}", consumes = "multipart/form-data")
-    public ResponseEntity<Void> uploadFile(@PathVariable("libraryId") Integer libraryId,
-            @PathVariable("collectionId") Integer collectionId,
+    @PostMapping(value = "/admin/collection/{collectionId}", consumes = "multipart/form-data")
+    public ResponseEntity<Void> postAdminUploadFile(@PathVariable("collectionId") Integer collectionId,
             @RequestParam("file") MultipartFile file) throws Exception {
         if (file.isEmpty()) {
             log.error("File is empty.");
@@ -188,7 +313,7 @@ public class AdminController {
         }
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         log.info("Got file upload: " + fileName);
-        Optional<Collection> collection = collectionController.loadCollection(libraryId, collectionId);
+        Optional<Collection> collection = collectionController.loadCollection(collectionId);
         if (collection.isEmpty()) {
             log.error("Collection with id {} not available.", collectionId);
             return ResponseEntity.notFound().build();
@@ -204,6 +329,40 @@ public class AdminController {
             log.error("Error saving file to disk: " + e.toString());
         }
         return ResponseEntity.created(URI.create("/")).build();
+    }
+
+    @PostMapping(value = "/admin/library", consumes = "application/x-www-form-urlencoded")
+    public String postAdminLibrary(Model model, Authentication authentication, @RequestBody MultiValueMap body) {
+        String libraryId = String.valueOf(body.getFirst("libraryId"));
+        String libraryTitle = String.valueOf(body.getFirst("libraryTitle"));
+        //
+        if (StringUtils.hasText(libraryId)) {
+            Optional<Library> byId = libraryRepository.findById(Integer.parseInt(libraryId));
+            final Library library = byId.get();
+            library.setTitle(libraryTitle);
+            library.getCollections().clear();
+            body.keySet()
+                    .stream()
+                    .filter(k -> (String.valueOf(k).startsWith("col")))
+                    .map(k -> String.valueOf(k).substring(3))
+                    .forEach(k -> {
+                        Optional<Collection> byId1 = collectionRepository.findById(Integer.parseInt("" + k));
+                        byId1.ifPresent(c -> library.getCollections().add(c));
+                    });
+            library.setModifiedAt(LocalDateTime.now());
+            library.setModifiedBy(authentication.getName());
+            libraryRepository.save(library);
+        } else {
+            final Library library = new Library();
+            library.setEnabled(true);
+            library.setCreatedAt(LocalDateTime.now());
+            library.setCreatedBy(authentication.getName());
+            library.setTitle(libraryTitle);
+            library.setModifiedAt(LocalDateTime.now());
+            library.setModifiedBy(authentication.getName());
+            libraryRepository.save(library);
+        }
+        return "redirect:/admin/library";
     }
 
     public String generatePassword() {

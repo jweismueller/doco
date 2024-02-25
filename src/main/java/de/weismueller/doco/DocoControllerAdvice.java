@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package de.weismueller.doco;
 
+import de.weismueller.doco.entity.CollectionComparator;
+import de.weismueller.doco.entity.LibraryComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -49,6 +51,11 @@ public class DocoControllerAdvice {
     @ModelAttribute
     public void addCustomization(Model model) {
         model.addAttribute("customization", customization);
+    }
+
+    @ModelAttribute("collectionComparator")
+    public CollectionComparator collectionComparator(DocoProperties properties) {
+        return new CollectionComparator(properties);
     }
 
 }

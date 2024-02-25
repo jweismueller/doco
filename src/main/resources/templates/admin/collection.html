@@ -5,48 +5,70 @@
 <body>
 <div class="container">
     <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
-    <h1 class="my-3 text-secondary" th:if="${collection?.id == null}"
-        th:text="#{admin-collection.headline.create}"></h1>
-    <h1 class="my-3 text-secondary" th:if="${collection?.id != null}"
-        th:text="#{admin-collection.headline.edit}"></h1>
-    <form method="post" style="max-width: 550px; width: 100%;" th:action="@{/admin/collection}">
-        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
-        <input id="collectionId" name="collectionId" th:value="${collection?.id}" type="hidden">
-        <div class="mb-3">
-            <label class="form-label" for="collectionLibraryId" th:text="#{admin-collection.label.library}"></label>
-            <select class="form-select" id="collectionLibraryId" name="collectionLibraryId" required>
-                <option th:each="library:${libraries}" th:value="${library.id}"
-                        th:text="${library.title}"></option>
-            </select>
+    <div th:if="${collection != null}">
+        <h2 class="my-3 text-secondary" th:if="${collection?.id == null}"
+            th:text="#{admin-collection.headline.create}"></h2>
+        <h2 class="my-3 text-secondary" th:if="${collection?.id != null}"
+            th:text="#{admin-collection.headline.edit}"></h2>
+        <form method="post" style="max-width: 550px; width: 100%;" th:action="@{/admin/collection}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <input id="collectionId" name="collectionId" th:value="${collection?.id}" type="hidden">
+            <!--/*
+            <div class="mb-3">
+                <label class="form-label" for="collectionLibraryId" th:text="#{admin-collection.label.library}"></label>
+                <select class="form-select" id="collectionLibraryId" name="collectionLibraryId" required>
+                    <option th:each="library:${libraries}"
+                            th:value="${library.id}"
+                            th:text="${library.title}"
+                            th:selected="${library.id == collection?.library?.id}"></option>
+                </select>
+            </div>
+            */-->
+            <div class="mb-3">
+                <label class="form-label" for="collectionTitle" th:text="#{admin-collection.label.name}"></label>
+                <input class="form-control" id="collectionTitle" name="collectionTitle" required
+                       th:value="${collection?.title}" type="text">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="collectionDate" th:text="#{admin-collection.label.date}"></label>
+                <input class="form-control" id="collectionDate" name="collectionDate" required
+                       th:value="${collection?.date}" type="date">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="collectionTime" th:text="#{admin-collection.label.time}"></label>
+                <input class="form-control" id="collectionTime" name="collectionTime" th:value="${collection?.time}"
+                       type="time">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="collectionEnabled" th:text="#{admin-collection.label.enabled}"></label>
+                <input class="form-check-input" id="collectionEnabled" name="collectionEnabled"
+                       th:checked="${collection?.enabled}"
+                       type="checkbox">
+            </div>
+            <div>
+                <button class="btn btn-primary mt-2"
+                        th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{general.submit}" type="submit">
+                </button>
+            </div>
+        </form>
+    </div>
+    <div th:if="${collections != null}">
+        <h2 class="my-3 text-secondary">
+            <span th:text="#{admin-collection.headline.collection}"></span>
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/collection?new'}">
+                <span th:insert="~{_general.html :: plus-icon}" th:remove="tag"></span>
+            </a>
+        </h2>
+        <div th:each="collection: ${collections}">
+            <span th:text="${collection.title}"></span>
+            <a class="text-decoration-none ms-2 text-muted"
+               style="vertical-align: text-top;"
+               th:href="@{/admin/collection/__${collection.id}__}">
+                <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+            </a>
         </div>
-        <div class="mb-3">
-            <label class="form-label" for="collectionTitle" th:text="#{admin-collection.label.name}"></label>
-            <input class="form-control" id="collectionTitle" name="collectionTitle" required
-                   th:value="${collection?.title}" type="text">
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="collectionDate" th:text="#{admin-collection.label.date}"></label>
-            <input class="form-control" id="collectionDate" name="collectionDate" required
-                   th:value="${collection?.date}" type="date">
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="collectionTime" th:text="#{admin-collection.label.time}"></label>
-            <input class="form-control" id="collectionTime" name="collectionTime" th:value="${collection?.time}"
-                   type="time">
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="collectionEnabled" th:text="#{admin-collection.label.active}"></label>
-            <input class="form-check-input" id="collectionEnabled" name="collectionEnabled"
-                   th:checked="${collection?.enabled}"
-                   type="checkbox">
-        </div>
-        <div>
-            <button class="btn btn-primary mt-2"
-                    th:style="'background-color:'+${customization.brandColor}"
-                    th:text="#{admin-collection.label.submit}" type="submit">
-            </button>
-        </div>
-    </form>
+    </div>
     <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
 </div>
 </body>

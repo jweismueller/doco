@@ -25,7 +25,7 @@ spring:
 de:
   weismueller:
     doco:
-      path-documents:
+      path-documents: temp
       customization-file:
       collection-order:
       document-order:

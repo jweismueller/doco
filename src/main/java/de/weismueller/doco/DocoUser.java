@@ -47,6 +47,11 @@ public class DocoUser extends User {
         return this.userLibraryList.stream().map(userLibrary -> userLibrary.getLibrary()).toList();
     }
 
+    public boolean hasCollectionAccess(Integer collection) {
+        return getLibraries().stream()
+                .anyMatch(l -> l.getCollections().stream().anyMatch(c -> c.getId().equals(collection)));
+    }
+
     public boolean hasLibraryAccess(Integer libraryId) {
         return this.userLibraryList.stream()
                 .anyMatch(userLibrary -> userLibrary.getLibrary().getId().equals(libraryId));

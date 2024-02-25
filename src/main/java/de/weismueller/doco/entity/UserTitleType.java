@@ -16,29 +16,17 @@
 
 package de.weismueller.doco.entity;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public enum UserTitleType {
 
-@Entity
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserLibrary {
+    NONE(""), DR("Dr."), PROF("Prof."), PROF_DR("Prof. Dr.");
+    String display;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    UserTitleType(String display) {
+        this.display = display;
+    }
 
-    @Column
-    private Integer userId;
+    public String getDisplay() {
+        return display;
+    }
 
-    @ManyToOne
-    private Library library;
-
-    @Transient
-    private boolean transientSelected = false;
 }

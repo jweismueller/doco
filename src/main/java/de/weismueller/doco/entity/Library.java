@@ -17,23 +17,22 @@
 package de.weismueller.doco.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Library {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
     private String title;
     private String description;
@@ -42,7 +41,15 @@ public class Library {
     private String modifiedBy;
     private LocalDateTime modifiedAt;
     private Boolean enabled = true;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Collection> collections;
     @Transient
-    private List<Collection> collectionList;
+    private List<User> transientUsers = new ArrayList<>();
+
+    public List<Collection> getCollectionsSorted(Comparator<Collection> comparator) {
+        List<Collection> result = new ArrayList<>(collections);
+        result.sort(comparator);
+        return result;
+    }
 
 }

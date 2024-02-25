@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:insert="~{_general.html :: head}" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
+    <div th:if="${library != null}">
+        <h2 class="my-3 text-secondary" th:if="${library?.id == null}">
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/library'}">
+                <span th:insert="~{_general.html :: left-icon}" th:remove="tag"></span>
+            </a>
+            <span th:text="#{admin-library.headline.create}"></span>
+        </h2>
+        <h2 class="my-3 text-secondary" th:if="${library?.id != null}">
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/library'}">
+                <span th:insert="~{_general.html :: left-icon}" th:remove="tag"></span>
+            </a>
+            <span th:text="#{admin-library.headline.edit}"></span>
+        </h2>
+        <form method="post" style="max-width: 550px; width: 100%;" th:action="@{/admin/library}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <input id="collectionId" name="libraryId" th:value="${library?.id}" type="hidden">
+            <div class="mb-3">
+                <label class="form-label" for="libraryTitle" th:text="#{admin-library.label.title}"></label>
+                <input class="form-control" id="libraryTitle" name="libraryTitle" required
+                       th:value="${library?.title}" type="text">
+            </div>
+            <div th:each="collection: ${collections}">
+                <div class="mb-3">
+                    <label th:for="${collection.id}" th:text="${collection.title}"></label>
+                    <input type="checkbox" th:name="${'col' + collection.id}" th:id="${collection.id}"
+                           th:checked="${selectedCollections.contains(collection.id)}">
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary mt-2"
+                        th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{general.submit}" type="submit">
+                </button>
+            </div>
+        </form>
+    </div>
+    <div th:if="${libraries != null}">
+        <h2 class="my-3 text-secondary">
+            <span th:text="#{admin-library.headline.library}"></span>
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/library?new'}">
+                <span th:insert="~{_general.html :: plus-icon}" th:remove="tag"></span>
+            </a>
+        </h2>
+        <div class="mb-2" th:each="library: ${libraries}">
+            <span th:text="${library.title}"></span>
+            <a class="text-decoration-none ms-2 text-muted"
+               style="vertical-align: text-top;"
+               th:href="@{/admin/library/__${library.id}__}">
+                <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+            </a>
+            <ul class="small">
+                <li th:each="collection: ${library.getCollectionsSorted(collectionComparator)}">
+                    <span th:text="${collection.title}"></span>
+            </ul>
+        </div>
+    </div>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
+</div>
+</body>
+</html>

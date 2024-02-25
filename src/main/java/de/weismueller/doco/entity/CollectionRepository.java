@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,6 @@ import java.util.List;
 
 public interface CollectionRepository extends CrudRepository<Collection, Integer> {
 
-    List<Collection> findByLibraryIdIn(List<Integer> libraryIds);
+    List<Collection> findByLibrariesIdIn(List<Integer> libraryIds);
 
 }
