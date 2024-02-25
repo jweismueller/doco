@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<head th:insert="~{_general.html :: head}" th:remove="tag">></head>
+<body>
+<div class="container">
+    <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
+    <h2>
+        <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+           th:href="@{/admin/user}">
+            <span th:text="#{admin-user.headline.user}" th:remove="tag"></span>
+        </a>
+    </h2>
+    <h2>
+        <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+           th:href="@{/admin/library}">
+            <span th:text="#{admin-user.headline.library}" th:remove="tag"></span>
+        </a>
+    </h2>
+    <h2>
+        <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+           th:href="@{/admin/collection}">
+            <span th:text="#{admin-collection.headline.collection}" th:remove="tag"></span>
+        </a>
+    </h2>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
+</div>
+</body>
+</html>

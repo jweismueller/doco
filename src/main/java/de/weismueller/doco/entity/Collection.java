@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 package de.weismueller.doco.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -33,17 +32,15 @@ import java.util.TreeSet;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Collection {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
-    @ManyToOne
-    private Library library;
-    @Transient
-    private SortedSet<Document> documents = new TreeSet<>();
-    @Transient
-    private String cssClass;
+    @ManyToMany(mappedBy = "collections", fetch = FetchType.EAGER)
+    private Set<Library> libraries;
     private String title;
     private String physicalFolder;
     private LocalDate date;
@@ -53,5 +50,9 @@ public class Collection {
     private String modifiedBy;
     private LocalDateTime modifiedAt;
     private Boolean enabled = true;
+    @Transient
+    private SortedSet<Document> transientDocuments = new TreeSet<>();
+    @Transient
+    private String transientCssClass;
 
 }

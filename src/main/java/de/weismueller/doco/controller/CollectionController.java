@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,35 +51,41 @@ public class CollectionController {
     private final CollectionRepository collectionRepository;
     private final DocoProperties properties;
 
-    @GetMapping("/library/{libraryId}/collection/{collectionId}")
-    public String collection(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, Model model) {
-        DocoUser user = (DocoUser) model.getAttribute("currentUser");
-        if (!user.hasLibraryAccess(libraryId)) {
-            log.error("User {} has no access to library {}", user.getUsername(), libraryId);
+    @GetMapping("/collection/{collectionId}")
+    public String getCollectionById(@PathVariable("collectionId") Integer collectionId, Model model) {
+        if (!hasAccess(model, collectionId)) {
             return "redirect:/";
         }
-        Optional<Library> library = libraryRepository.findById(libraryId);
-        Optional<Collection> collection = loadCollection(libraryId, collectionId);
+        Optional<Collection> collection = loadCollection(collectionId);
         if (collection.isPresent()) {
             model.addAttribute("collection", collection.get());
         }
         return "collection";
     }
 
-    @GetMapping("/library/{libraryId}/collection/{collectionId}/document/{documentId}")
-    public String fileRedirect(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId, Model model) {
-        Optional<Document> document = loadDocument(libraryId, collectionId, documentId);
+    @GetMapping("/collection/{collectionId}/document/{documentId}")
+    public String getFileRedirect(@PathVariable("collectionId") Integer collectionId,
+            @PathVariable("documentId") String documentId, Model model) {
+        if (!hasAccess(model, collectionId)) {
+            return "redirect:/";
+        }
+        Optional<Document> document = loadDocument(collectionId, documentId);
         if (document.isEmpty()) {
             return "redirect:/";
         }
         String encodedTitle = URLEncoder.encode(document.get().getName(), StandardCharsets.UTF_8);
-        String redirect = String.format("redirect:/library/%d/collection/%d/document/%s/%s", libraryId, collectionId, documentId, encodedTitle);
+        String redirect = String.format("redirect:/collection/%d/document/%s/%s", collectionId, documentId,
+                encodedTitle);
         return redirect;
     }
 
-    @GetMapping("/library/{libraryId}/collection/{collectionId}/document/{documentId}/{name}")
-    public ResponseEntity<Resource> getDocument(@PathVariable("libraryId") Integer libraryId, @PathVariable("collectionId") Integer collectionId, @PathVariable("documentId") String documentId, @PathVariable("name") String name, Model model) {
-        Optional<Document> document = loadDocument(libraryId, collectionId, documentId);
+    @GetMapping("/collection/{collectionId}/document/{documentId}/{name}")
+    public ResponseEntity<Resource> getDocument(@PathVariable("collectionId") Integer collectionId,
+            @PathVariable("documentId") String documentId, @PathVariable("name") String name, Model model) {
+        if (!hasAccess(model, collectionId)) {
+            return ResponseEntity.notFound().build();
+        }
+        Optional<Document> document = loadDocument(collectionId, documentId);
         if (document.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -106,22 +112,23 @@ public class CollectionController {
         return builder.body(resource);
     }
 
-    private Optional<Document> loadDocument(Integer libraryId, Integer collectionId, String documentId) {
-        Optional<Collection> collection = loadCollection(libraryId, collectionId);
+    private Optional<Document> loadDocument(Integer collectionId, String documentId) {
+        Optional<Collection> collection = loadCollection(collectionId);
         Document document = null;
         if (collection.isPresent() && documentId != null) {
-            return collection.get().getDocuments().stream().filter(e -> e.getId().equals(documentId)).findAny();
+            return collection.get()
+                    .getTransientDocuments()
+                    .stream()
+                    .filter(e -> e.getId().equals(documentId))
+                    .findAny();
         }
         return Optional.empty();
     }
 
-    public Optional<Collection> loadCollection(Integer libraryId, Integer collectionId) {
+    Optional<Collection> loadCollection(Integer collectionId) {
         Optional<Collection> collection = collectionRepository.findById(collectionId);
         if (!collection.isPresent()) {
             return collection;
-        }
-        if (!collection.get().getLibrary().getId().equals(libraryId)) {
-            return Optional.empty();
         }
         try {
             loadDocuments(collection.get());
@@ -133,7 +140,7 @@ public class CollectionController {
     }
 
     private void loadDocuments(Collection collection) throws Exception {
-        collection.setDocuments(new TreeSet<>(new DocumentComparator(properties)));
+        collection.setTransientDocuments(new TreeSet<>(new DocumentComparator(properties)));
         Path p = Path.of(properties.getPathDocuments(), collection.getPhysicalFolder());
         List<Path> paths = Files.list(p).collect(Collectors.toList());
         int i = 0;
@@ -144,8 +151,22 @@ public class CollectionController {
             doc.setId(digestAsHex);
             doc.setName(name);
             doc.setPath(path);
-            collection.getDocuments().add(doc);
+            collection.getTransientDocuments().add(doc);
         }
+    }
+
+    private boolean hasAccess(Model model, Integer collectionId) {
+        DocoUser user = (DocoUser) model.getAttribute("currentUser");
+        Optional<Collection> collection = loadCollection(collectionId);
+        if (collection.isEmpty()) {
+            log.error("Collection with id {} not available.", collectionId);
+            return false;
+        }
+        if (!user.hasCollectionAccess(collection.get().getId())) {
+            log.error("User has no access to collection with id {}", collectionId);
+            return false;
+        }
+        return true;
     }
 
 }

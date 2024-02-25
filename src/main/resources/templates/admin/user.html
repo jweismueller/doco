@@ -5,52 +5,136 @@
 <body>
 <div class="container">
     <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
-    <h1 class="my-3 text-secondary" th:text="#{admin-user.headline}"></h1>
-    <div th:each="user: ${users}">
-        <div class="my-2">
-            <span th:text="${user.lastName}"></span>,
-            <span th:text="${user.firstName}"></span>,
-            <span th:text="${user.title.display}"></span>,
-            <span th:text="${user.username}"></span>
-            <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
-               th:href="@{/admin/user/__${user.id}__}">
-                <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+    <!-- users -->
+    <div th:if="${users != null}" class="mb-5">
+        <h2 class="my-3 text-secondary">
+            <span th:text="#{admin-user.headline.user}"></span>
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/user?new'}">
+                <span th:insert="~{_general.html :: plus-icon}" th:remove="tag"></span>
             </a>
+        </h2>
+        <div th:each="user: ${users}">
+            <div class="my-2">
+                <span th:class="${user.enabled ? '' : 'text-decoration-line-through'}"
+                      th:text="${user.lastName} + ', ' + ${user.firstName}"></span>,
+                <span th:text="${user.title?.display} + ', '"
+                      th:if="${user.title != T(de.weismueller.doco.entity.UserTitleType).NONE}"></span>
+                <span th:text="${user.username}"></span>
+                <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+                   th:href="@{/admin/user/__${user.id}__}">
+                    <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+                </a>
+            </div>
         </div>
     </div>
-    <form style="max-width: 550px; width: 100%;" th:if="${user != null}">
-        <div class="form-group">
-            <label for="username" th:text="#{admin-user.label.username}"></label>
-            <input class="form-control" disabled id="username" th:value="${user?.username}" type="text">
-        </div>
-        <div class="form-group">
-            <label for="username" th:text="#{admin-user.label.lastname}"></label>
-            <input class="form-control" disabled id="lastName" th:value="${user?.lastName}" type="text">
-        </div>
-        <div class="form-group">
-            <label for="username" th:text="#{admin-user.label.firstname}"></label>
-            <input class="form-control" disabled id="firstName" th:value="${user?.firstName}" type="text">
-        </div>
-        <div class="form-group">
-            <label for="username" th:text="#{admin-user.label.title}"></label>
-            <input class="form-control" disabled id="title" th:value="${user?.title}" type="text">
-        </div>
-        <div class="form-group" th:if="${newPassword != null}">
-            <label for="username" th:text="#{admin-user.label.password}"></label>
-            <input class="form-control" disabled id="password" th:value="${newPassword}" type="text">
-        </div>
-    </form>
-    <div th:if="${user != null && newPassword == null}">
+    <div th:if="${user != null}" class="mb-5">
+        <!-- User form -->
+        <h2 class="my-3 text-secondary" th:if="${user?.id == null}">
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/user'}">
+                <span th:insert="~{_general.html :: left-icon}" th:remove="tag"></span>
+            </a>
+            <span th:text="#{admin-user.headline.create}"></span>
+        </h2>
+        <h2 class="my-3 text-secondary" th:if="${user?.id != null}">
+            <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/user'}">
+                <span th:insert="~{_general.html :: left-icon}" th:remove="tag"></span>
+            </a>
+            <span th:text="#{admin-user.headline.edit}"></span>
+        </h2>
+        <form method="post" style="max-width: 550px; width: 100%;"
+              th:if="${user != null}"
+              th:action="@{/admin/user}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <input id="userId" name="userId" th:value="${user?.id}" type="hidden">
+            <div class="mb-3">
+                <label for="username" th:text="#{admin-user.label.username}"></label>
+                <input class="form-control" th:disabled="${user?.id!=null}" id="username" name="username"
+                       th:value="${user?.username}"
+                       type="text">
+            </div>
+            <div class="mb-3">
+                <label for="lastName" th:text="#{admin-user.label.lastname}"></label>
+                <input class="form-control" id="lastName" name="lastName" th:value="${user?.lastName}" type="text">
+            </div>
+            <div class="mb-3">
+                <label for="firstName" th:text="#{admin-user.label.firstname}"></label>
+                <input class="form-control" id="firstName" name="firstName" th:value="${user?.firstName}" type="text">
+            </div>
+            <div class="mb-3">
+                <label for="username" th:text="#{admin-user.label.title}"></label>
+                <select class="form-select" id="userTitle" name="userTitle" required>
+                    <option th:each="titleType:${T(de.weismueller.doco.entity.UserTitleType).values()}"
+                            th:value="${titleType.name}"
+                            th:text="${titleType.getDisplay()}"
+                            th:selected="${titleType.name == user?.title?.name}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="userEnabled" th:text="#{admin-user.label.enabled}"></label>
+                <input class="form-check-input" id="userEnabled" name="userEnabled"
+                       th:checked="${user?.enabled}"
+                       type="checkbox">
+            </div>
+            <div class="mb-3" th:if="${newPassword != null}">
+                <label for="username" th:text="#{admin-user.label.password}"></label>
+                <input class="form-control" disabled id="password" th:value="${newPassword}" type="text">
+                <div class="mt-3">
+                    <a th:href="@{/admin/user}"><span th:text="#{general.back}"></span></a>
+                </div>
+            </div>
+            <div th:if="${newPassword == null}">
+                <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{general.submit}" type="submit"></button>
+            </div>
+        </form>
+    </div>
+    <!-- library form -->
+    <div th:if="${userLibraries != null}" class="mb-5">
+        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.library}"></h2>
+        <form method="post" style="max-width: 550px; width: 100%;"
+              th:action="@{/admin/user/__${user.id}__/userLibraries}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <div th:each="userLibrary: ${userLibraries}">
+                <div class="mb-3" style="font-size:120%;">
+                    <label th:for="${userLibrary.library.id}" th:text="${userLibrary.library.title}"></label>
+                    <input type="checkbox" th:name="${userLibrary.library.id}" th:id="${userLibrary.library.id}"
+                           th:checked="${userLibrary.transientSelected}">
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
+                        th:text="#{general.submit}" type="submit"></button>
+            </div>
+        </form>
+    </div>
+    <!-- reset password form -->
+    <div th:if="${user != null && newPassword == null}" class="mb-5">
+        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.resetpassword}"></h2>
         <form method="post" style="max-width: 550px; width: 100%;"
               th:action="@{/admin/user/__${user.id}__/resetPassword}">
             <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
             <div>
                 <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
-                        th:text="#{admin-user.label.submit}" type="submit"></button>
+                        th:text="#{admin-user.label.resetpassword}" type="submit"></button>
             </div>
         </form>
     </div>
-    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
-</div>
+    <!-- permission view -->
+    <div th:if="${libraries != null}" class="mb-5">
+        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.permissions}"></h2>
+        <div class="mb-2" th:each="library: ${libraries}">
+            <span th:text="${library.title}"></span>
+            <ul>
+                <li th:each="user : ${library.getTransientUsers}">
+                    <span th:text="${user.lastName} + ', ' + ${user.firstName} + ', ' + ${user.username}"></span>
+                    <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+                       th:href="@{/admin/user/__${user.id}__}">
+                        <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
+    </div>
 </body>
 </html>

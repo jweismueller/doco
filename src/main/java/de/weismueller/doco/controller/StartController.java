@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import de.weismueller.doco.DocoControllerAdvice;
 import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
 import de.weismueller.doco.DocoUser;
-import de.weismueller.doco.entity.Collection;
-import de.weismueller.doco.entity.CollectionComparator;
-import de.weismueller.doco.entity.CollectionRepository;
+import de.weismueller.doco.entity.*;
 import jakarta.servlet.ServletContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +31,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 @Controller
@@ -58,18 +57,12 @@ public class StartController {
     @GetMapping(value = {"", "/", "/start"})
     public String start(Model model, Authentication authentication) {
         DocoUser user = (DocoUser) authentication.getPrincipal();
-        Iterable<Collection> all = collectionRepository.findByLibraryIdIn(user.getLibraryIds());
         TreeSet<Collection> sorted = new TreeSet<>(new CollectionComparator(properties));
-        boolean isAdmin = DocoControllerAdvice._isAdmin(authentication);
-        for (Collection collection : all) {
-            if (!collection.getEnabled()) {
-                collection.setCssClass("text-black-25");
+        collectionRepository.findByLibrariesIdIn(user.getLibraryIds()).forEach(c -> {
+            if (c.getEnabled()) {
+                sorted.add(c);
             }
-            if (collection.getEnabled() || isAdmin) {
-                sorted.add(collection);
-            }
-        }
-        //all.forEach(a -> sorted.add(a));
+        });
         model.addAttribute("collections", sorted);
         return "start";
     }
