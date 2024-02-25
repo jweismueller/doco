@@ -19,7 +19,6 @@ package de.weismueller.doco.security;
 import de.weismueller.doco.DocoUser;
 import de.weismueller.doco.entity.User;
 import de.weismueller.doco.entity.UserAuthorityRepository;
-import de.weismueller.doco.entity.UserLibraryRepository;
 import de.weismueller.doco.entity.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,15 +40,12 @@ public class DocoUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserAuthorityRepository userAuthorityRepository;
-    private final UserLibraryRepository userLibraryRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Username " + username + " not found"));
-        DocoUser doco = new DocoUser(user.getUsername(), user.getPassword(),
-                getGrantedAuthorities(getPrivileges(user.getId())));
-        userLibraryRepository.findByUserId(user.getId()).forEach(libraryUser -> doco.addLibrary(libraryUser));
+                .orElseThrow(() -> new UsernameNotFoundException("username " + username + " not found"));
+        DocoUser doco = new DocoUser(user, getGrantedAuthorities(getPrivileges(user.getId())));
         return doco;
     }
 
@@ -67,4 +63,5 @@ public class DocoUserDetailsService implements UserDetailsService {
         }
         return authorities;
     }
+
 }
