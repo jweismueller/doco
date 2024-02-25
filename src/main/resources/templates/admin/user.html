@@ -82,26 +82,16 @@
                     <a th:href="@{/admin/user}"><span th:text="#{general.back}"></span></a>
                 </div>
             </div>
-            <div th:if="${newPassword == null}">
-                <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
-                        th:text="#{general.submit}" type="submit"></button>
-            </div>
-        </form>
-    </div>
-    <!-- library form -->
-    <div th:if="${userLibraries != null}" class="mb-5">
-        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.library}"></h2>
-        <form method="post" style="max-width: 550px; width: 100%;"
-              th:action="@{/admin/user/__${user.id}__/userLibraries}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
-            <div th:each="userLibrary: ${userLibraries}">
-                <div class="mb-3" style="font-size:120%;">
-                    <label th:for="${userLibrary.library.id}" th:text="${userLibrary.library.title}"></label>
-                    <input type="checkbox" th:name="${userLibrary.library.id}" th:id="${userLibrary.library.id}"
-                           th:checked="${userLibrary.transientSelected}">
+            <div th:if="${libraries != null}">
+                <div th:each="library: ${libraries}">
+                    <div class="mb-3">
+                        <label th:for="${library.id}" th:text="${library.title}"></label>
+                        <input type="checkbox" th:name="${'lib' + library.id}" th:id="${library.id}"
+                               th:checked="${selectedLibraries.contains(library.id)}">
+                    </div>
                 </div>
             </div>
-            <div>
+            <div th:if="${newPassword == null}">
                 <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
                         th:text="#{general.submit}" type="submit"></button>
             </div>
@@ -120,19 +110,12 @@
         </form>
     </div>
     <!-- permission view -->
-    <div th:if="${libraries != null}" class="mb-5">
+    <div th:if="${user != null}" class="mb-5">
         <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.permissions}"></h2>
-        <div class="mb-2" th:each="library: ${libraries}">
-            <span th:text="${library.title}"></span>
-            <ul>
-                <li th:each="user : ${library.getTransientUsers}">
-                    <span th:text="${user.lastName} + ', ' + ${user.firstName} + ', ' + ${user.username}"></span>
-                    <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
-                       th:href="@{/admin/user/__${user.id}__}">
-                        <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
-                    </a>
-                </li>
-            </ul>
+        <div class="mb-2" th:each="library: ${user.libraries}">
+            <div class="mb-2" th:each="collection: ${library.collections}">
+                <span th:text="${collection.title}"></span> (<span class="small" th:text="${library.title}"></span>)
+            </div>
         </div>
         <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
     </div>

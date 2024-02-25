@@ -19,6 +19,8 @@ package de.weismueller.doco.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Set;
+
 @Entity
 @Data
 public class User {
@@ -38,5 +40,7 @@ public class User {
     private String lastName;
     @Enumerated(EnumType.STRING)
     private UserTitleType title;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Library> libraries;
 
 }

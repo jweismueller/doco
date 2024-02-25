@@ -19,7 +19,6 @@ package de.weismueller.doco.controller;
 import com.google.common.collect.Streams;
 import de.weismueller.doco.DocoProperties;
 import de.weismueller.doco.entity.*;
-import de.weismueller.doco.entity.Collection;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -45,9 +44,11 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Controller
 @Slf4j
@@ -58,7 +59,6 @@ public class AdminController {
     private final CollectionRepository collectionRepository;
     private final LibraryRepository libraryRepository;
     private final UserRepository userRepository;
-    private final UserLibraryRepository userLibraryRepository;
     private final DocoProperties properties;
     private final CollectionController collectionController;
     private final ServletContext servletContext;
@@ -114,20 +114,7 @@ public class AdminController {
             userRepository.findAll().iterator().forEachRemaining(users::add);
             Collections.sort(users, new UserComparator());
             model.addAttribute("users", users);
-            Map<Integer, Library> libraryMap = new HashMap<>();
-            userLibraryRepository.findAll().forEach(ul -> {
-                if (!libraryMap.containsKey(ul.getLibrary().getId())) {
-                    libraryMap.put(ul.getLibrary().getId(), ul.getLibrary());
-                }
-                userRepository.findById(ul.getUserId()).ifPresent(u -> {
-                    if (u.isEnabled()) {
-                        libraryMap.get(ul.getLibrary().getId()).getTransientUsers().add(u);
-                    }
-                });
-            });
-            List<Library> libraries = libraryMap.values().stream().collect(Collectors.toList());
-            Collections.sort(libraries, new LibraryComparator());
-            model.addAttribute("libraries", libraries);
+            model.addAttribute("libraries", new ArrayList<>());
         }
         return "admin/user";
     }
@@ -136,24 +123,13 @@ public class AdminController {
     public String getAdminUserById(@PathVariable("id") Integer id, Model model) {
         Optional<User> byId = userRepository.findById(id);
         model.addAttribute("user", byId.get());
-        Set<Integer> libraryIds = userLibraryRepository.findByUserId(id)
-                .stream()
-                .map(u -> u.getLibrary().getId())
-                .collect(Collectors.toSet());
-        List<UserLibrary> collect = userLibraryRepository.findByUserId(id).stream().map(l -> {
-            l.setTransientSelected(true);
-            return l;
-        }).collect(Collectors.toList());
-        libraryRepository.findAll().forEach(l -> {
-            if (!libraryIds.contains(l.getId())) {
-                UserLibrary userLibrary = new UserLibrary();
-                userLibrary.setLibrary(l);
-                userLibrary.setTransientSelected(false);
-                collect.add(userLibrary);
-            }
-        });
-        Collections.sort(collect, new UserLibraryComparator());
-        model.addAttribute("userLibraries", collect);
+        List<Library> libraries = libraryRepository.findAll();
+        Collections.sort(libraries, new LibraryComparator());
+        model.addAttribute("libraries", libraries);
+        model.addAttribute("selectedLibraries", libraries.stream()
+                .filter(l -> byId.get().getLibraries().contains(l))
+                .map(l -> l.getId())
+                .collect(Collectors.toList()));
         return "admin/user";
     }
 
@@ -180,6 +156,15 @@ public class AdminController {
         User user;
         if (StringUtils.hasText(userId)) {
             user = userRepository.findById(Integer.parseInt(userId)).get();
+            user.getLibraries().clear();
+            body.keySet()
+                    .stream()
+                    .filter(k -> (String.valueOf(k).startsWith("lib")))
+                    .map(k -> String.valueOf(k).substring(3))
+                    .forEach(k -> {
+                        Optional<Library> byId = libraryRepository.findById(Integer.parseInt("" + k));
+                        byId.ifPresent(c -> user.getLibraries().add(c));
+                    });
             user.setEnabled(userEnabled);
         } else {
             user = new User();
@@ -192,33 +177,6 @@ public class AdminController {
         user.setTitle(UserTitleType.valueOf(title));
         User saved = userRepository.save(user);
         String redirect = String.format("redirect:/admin/user/%d", saved.getId());
-        return redirect;
-    }
-
-    @PostMapping("/admin/user/{id}/userLibraries")
-    public String postAdminUserLibraries(@PathVariable("id") Integer id, Model model, @RequestBody MultiValueMap body) {
-        Optional<User> byId = userRepository.findById(id);
-        User user = byId.get();
-        Set<Integer> libraryIdsActive = new HashSet<>();
-        body.remove("_csrf");
-        body.keySet().forEach(k -> libraryIdsActive.add(Integer.parseInt(k.toString())));
-        List<UserLibrary> userLibraries = userLibraryRepository.findByUserId(id);
-        // delete all user libraries that are not in the active list
-        userLibraries.forEach(ul -> {
-            if (!libraryIdsActive.contains(ul.getLibrary().getId())) {
-                userLibraryRepository.delete(ul);
-            }
-        });
-        // create user libraries that are in the active list but not in the user libraries
-        libraryIdsActive.forEach(l -> {
-            if (userLibraries.stream().noneMatch(ul -> ul.getLibrary().getId().equals(l))) {
-                UserLibrary userLibrary = new UserLibrary();
-                userLibrary.setLibrary(libraryRepository.findById(l).get());
-                userLibrary.setUserId(id);
-                userLibraryRepository.save(userLibrary);
-            }
-        });
-        String redirect = String.format("redirect:/admin/user/%d", id);
         return redirect;
     }
 

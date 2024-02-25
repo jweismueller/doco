@@ -17,7 +17,6 @@
 package de.weismueller.doco;
 
 import de.weismueller.doco.entity.CollectionComparator;
-import de.weismueller.doco.entity.LibraryComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

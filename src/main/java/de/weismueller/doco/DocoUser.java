@@ -17,17 +17,21 @@
 package de.weismueller.doco;
 
 import de.weismueller.doco.entity.Library;
-import de.weismueller.doco.entity.UserLibrary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class DocoUser extends User {
 
-    private List<UserLibrary> userLibraryList = new ArrayList<>();
+    private de.weismueller.doco.entity.User user;
+
+    public DocoUser(de.weismueller.doco.entity.User user, List<GrantedAuthority> authorities) {
+        this(user.getUsername(), user.getPassword(), authorities);
+        this.user = user;
+    }
 
     public DocoUser(String username, String password, Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
@@ -40,11 +44,11 @@ public class DocoUser extends User {
     }
 
     public List<Integer> getLibraryIds() {
-        return this.userLibraryList.stream().map(userLibrary -> userLibrary.getLibrary().getId()).toList();
+        return this.user.getLibraries().stream().map(l -> l.getId()).toList();
     }
 
-    public List<Library> getLibraries() {
-        return this.userLibraryList.stream().map(userLibrary -> userLibrary.getLibrary()).toList();
+    public Set<Library> getLibraries() {
+        return this.user.getLibraries();
     }
 
     public boolean hasCollectionAccess(Integer collection) {
@@ -53,11 +57,6 @@ public class DocoUser extends User {
     }
 
     public boolean hasLibraryAccess(Integer libraryId) {
-        return this.userLibraryList.stream()
-                .anyMatch(userLibrary -> userLibrary.getLibrary().getId().equals(libraryId));
-    }
-
-    public void addLibrary(UserLibrary userLibrary) {
-        this.userLibraryList.add(userLibrary);
+        return this.user.getLibraries().contains(libraryId);
     }
 }
