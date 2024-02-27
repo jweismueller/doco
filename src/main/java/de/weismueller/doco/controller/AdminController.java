@@ -183,11 +183,12 @@ public class AdminController {
     @GetMapping("/admin/collection")
     public String getAdminCollectionList(Model model, HttpServletRequest request, Authentication authentication) {
         boolean isNew = Streams.stream(request.getParameterNames().asIterator()).anyMatch("new"::equals);
-        model.addAttribute("libraries", libraryRepository.findAll());
         if (isNew) {
             model.addAttribute("collection", new Collection());
         } else {
-            model.addAttribute("collections", collectionRepository.findAll());
+            List<Collection> collections = collectionRepository.findAll();
+            Collections.sort(collections, new CollectionComparator(properties));
+            model.addAttribute("collections", collections);
         }
         return "admin/collection";
     }

@@ -16,11 +16,11 @@
 
 package de.weismueller.doco.entity;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface CollectionRepository extends CrudRepository<Collection, Integer> {
+public interface CollectionRepository extends JpaRepository<Collection, Integer> {
 
     List<Collection> findByLibrariesIdIn(List<Integer> libraryIds);
 
