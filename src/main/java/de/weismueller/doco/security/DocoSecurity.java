@@ -43,7 +43,7 @@ public class DocoSecurity {
 
                 .requestMatchers("/js/**", "/css/**", "/images/**")
                 .permitAll()
-                .requestMatchers("/login", "/imprint")
+                .requestMatchers("/login", "/imprint", "/favicon.ico", "/logo.png")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
