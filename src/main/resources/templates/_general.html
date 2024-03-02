@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/html">
 <!--/*@thymesVar id="isAdmin" type="java.lang.Boolean"*/-->
-<!--/*@thymesVar id="javascriptInject" type="java.lang.String"*/-->
+<!--/*@thymesVar id="javaScriptInjection" type="java.lang.String"*/-->
 <!--/*@thymesVar id="currentUser" type="org.springframework.security.core.userdetails.UserDetails"*/-->
 <!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
 <head th:fragment="head">
@@ -89,7 +89,7 @@
             <a class="text-decoration-none text-black small"
                th:href="@{/imprint}" th:text="#{general.footer.imprint}"></a>
         </div>
-        <script th:utext="${javascriptInject}"></script>
+        <script th:utext="${javaScriptInjection}"></script>
     </footer>
     <!-- https://icons.getbootstrap.com/ -->
     <span th:fragment="download-icon">

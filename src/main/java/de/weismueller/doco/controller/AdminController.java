@@ -17,6 +17,7 @@
 package de.weismueller.doco.controller;
 
 import com.google.common.collect.Streams;
+import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
 import de.weismueller.doco.entity.*;
 import jakarta.servlet.ServletContext;
@@ -60,6 +61,7 @@ public class AdminController {
     private final LibraryRepository libraryRepository;
     private final UserRepository userRepository;
     private final DocoProperties properties;
+    private final DocoCustomization customization;
     private final CollectionController collectionController;
     private final ServletContext servletContext;
     private final PasswordEncoder encoder;
@@ -93,7 +95,7 @@ public class AdminController {
             }
             collections.add(c);
         });
-        Collections.sort(collections, new CollectionComparator(properties));
+        Collections.sort(collections, new CollectionComparator(customization));
         model.addAttribute("collections", collections);
         model.addAttribute("selectedCollections", libraryRepository.findById(id)
                 .get()
@@ -187,7 +189,7 @@ public class AdminController {
             model.addAttribute("collection", new Collection());
         } else {
             List<Collection> collections = collectionRepository.findAll();
-            Collections.sort(collections, new CollectionComparator(properties));
+            Collections.sort(collections, new CollectionComparator(customization));
             model.addAttribute("collections", collections);
         }
         return "admin/collection";

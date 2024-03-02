@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,12 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-
 @Configuration
 @Data
 @ConfigurationProperties(prefix = "de.weismueller.doco")
 public class DocoProperties {
 
     private String pathDocuments;
-
-    private List<String> collectionOrder;
-
-    private List<String> documentOrder;
-
-    private String documentAgendaItemKeyword;
 
     private String customizationFile;
 

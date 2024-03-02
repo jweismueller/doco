@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8480
   servlet:
     context-path: /doco
 spring:
@@ -27,6 +27,3 @@ de:
     doco:
       path-documents: temp
       customization-file:
-      collection-order:
-      document-order:
-      document-agenda-item-keyword:

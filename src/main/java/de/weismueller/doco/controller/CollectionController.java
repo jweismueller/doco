@@ -16,9 +16,13 @@
 
 package de.weismueller.doco.controller;
 
+import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
 import de.weismueller.doco.DocoUser;
-import de.weismueller.doco.entity.*;
+import de.weismueller.doco.entity.Collection;
+import de.weismueller.doco.entity.CollectionRepository;
+import de.weismueller.doco.entity.Document;
+import de.weismueller.doco.entity.DocumentComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -47,8 +51,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CollectionController {
 
-    private final LibraryRepository libraryRepository;
     private final CollectionRepository collectionRepository;
+    private final DocoCustomization customization;
     private final DocoProperties properties;
 
     @GetMapping("/collection/{collectionId}")
@@ -140,7 +144,7 @@ public class CollectionController {
     }
 
     private void loadDocuments(Collection collection) throws Exception {
-        collection.setTransientDocuments(new TreeSet<>(new DocumentComparator(properties)));
+        collection.setTransientDocuments(new TreeSet<>(new DocumentComparator(customization)));
         Path p = Path.of(properties.getPathDocuments(), collection.getPhysicalFolder());
         List<Path> paths = Files.list(p).collect(Collectors.toList());
         int i = 0;

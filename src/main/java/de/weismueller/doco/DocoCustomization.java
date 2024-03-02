@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 @Data
 @Service
@@ -39,11 +41,14 @@ public class DocoCustomization {
 
     private final DocoProperties properties;
 
+    private String javaScript;
     private String helpOrder;
     private String brandColor;
     private String imprint;
     private String faviconBase64;
     private String logoBase64;
+    private List<String> documentSortOrder;
+    private String documentAgendaItemKeyword;
 
     private static String getContent(Document document, Document defaultDocument, String tag) {
         if (document != null) {
@@ -79,6 +84,16 @@ public class DocoCustomization {
         faviconBase64 = CharMatcher.whitespace().removeFrom(faviconBase64);
         logoBase64 = getContent(document, defaultDocument, "logo-base64");
         logoBase64 = CharMatcher.whitespace().removeFrom(logoBase64);
+        javaScript = getContent(document, defaultDocument, "java-script");
+        documentAgendaItemKeyword = getContent(document, defaultDocument, "document-agenda-item-keyword");
+        documentSortOrder = List.of(getContent(document, defaultDocument, "document-sort-order").split(","));
     }
 
+    public List<String> getDocumentSortOrder() {
+        if (documentSortOrder == null) {
+            return Collections.emptyList();
+        } else {
+            return documentSortOrder;
+        }
+    }
 }
