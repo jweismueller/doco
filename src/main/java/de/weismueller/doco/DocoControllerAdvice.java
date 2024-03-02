@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class DocoControllerAdvice {
 
     private final DocoCustomization customization;
-    private final DocoProperties properties;
 
     public static boolean _isAdmin(Authentication authentication) {
         return authentication != null && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
@@ -53,8 +52,13 @@ public class DocoControllerAdvice {
     }
 
     @ModelAttribute("collectionComparator")
-    public CollectionComparator collectionComparator(DocoProperties properties) {
-        return new CollectionComparator(properties);
+    public CollectionComparator collectionComparator(DocoCustomization customization) {
+        return new CollectionComparator(customization);
+    }
+
+    @ModelAttribute("javaScriptInjection")
+    public String getJavascriptInjection(DocoCustomization customization) {
+        return customization.getJavaScript();
     }
 
 }

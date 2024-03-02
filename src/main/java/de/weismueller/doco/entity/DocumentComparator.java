@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 Jürgen Weismüller.
+ * Copyright 2022-2023 Jürgen Weismüller.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package de.weismueller.doco.entity;
 
+import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
 import org.springframework.util.StringUtils;
 
@@ -29,12 +30,12 @@ public class DocumentComparator implements Comparator<Document> {
 
     private String documentAgendaItemKeyword = null;
 
-    public DocumentComparator(DocoProperties properties) {
-        int n = properties.getDocumentOrder().size();
+    public DocumentComparator(DocoCustomization customization) {
+        int n = customization.getDocumentSortOrder().size();
         for (int i = 0; i < n; i++) {
-            documentOrder.put(String.valueOf((char) ('a' + i)), properties.getDocumentOrder().get(i));
+            documentOrder.put(String.valueOf((char) ('a' + i)), customization.getDocumentSortOrder().get(i));
         }
-        this.documentAgendaItemKeyword = properties.getDocumentAgendaItemKeyword();
+        this.documentAgendaItemKeyword = customization.getDocumentAgendaItemKeyword();
     }
 
     @Override
@@ -59,6 +60,7 @@ public class DocumentComparator implements Comparator<Document> {
         key = colSortKey + "_";
         //
         if (StringUtils.hasText(documentAgendaItemKeyword)) {
+            documentAgendaItemKeyword = documentAgendaItemKeyword.toLowerCase(Locale.ROOT);
             if (normalizedName.startsWith(documentAgendaItemKeyword)) {
                 String paddedName = padNumbers(normalizedName);
                 key += "b_" + paddedName + "_a";

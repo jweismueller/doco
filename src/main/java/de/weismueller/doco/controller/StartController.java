@@ -57,7 +57,7 @@ public class StartController {
     @GetMapping(value = {"", "/", "/start"})
     public String start(Model model, Authentication authentication) {
         DocoUser user = (DocoUser) authentication.getPrincipal();
-        TreeSet<Collection> sorted = new TreeSet<>(new CollectionComparator(properties));
+        TreeSet<Collection> sorted = new TreeSet<>(new CollectionComparator(customization));
         collectionRepository.findByLibrariesIdIn(user.getLibraryIds()).forEach(c -> {
             if (c.getEnabled()) {
                 sorted.add(c);
