@@ -33,8 +33,8 @@ public class ImprintController {
 
     @GetMapping("/imprint")
     public String imprint(Model model, Authentication authentication) {
-        String imprint = customization.getImprint();
-        model.addAttribute("imprint", imprint);
+        String imprintContent = customization.getImprintContent();
+        model.addAttribute("imprintContent", imprintContent);
         return "imprint";
     }
 

@@ -21,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.xml.DocumentBuilderFactoryUtils;
@@ -35,16 +36,18 @@ import java.util.List;
 
 @Data
 @Service
+@Scope("singleton")
 @Slf4j
 @RequiredArgsConstructor
 public class DocoCustomization {
 
     private final DocoProperties properties;
-
+    private String environment;
     private String javaScript;
     private String helpOrder;
     private String brandColor;
-    private String imprint;
+    private String imprintContent;
+    private String imprintLink;
     private String faviconBase64;
     private String logoBase64;
     private List<String> documentSortOrder;
@@ -54,9 +57,13 @@ public class DocoCustomization {
         if (document != null) {
             String out = document.getElementsByTagName(tag).item(0).getTextContent();
             if (StringUtils.hasText(out)) {
+                log.info("Using customization for {} from environment: {}", tag,
+                        document.getDocumentElement().getAttribute("environment"));
                 return out;
             }
         }
+        log.info("Using customization for {} from environment: {}", tag,
+                defaultDocument.getDocumentElement().getAttribute("environment"));
         return defaultDocument.getElementsByTagName(tag).item(0).getTextContent();
     }
 
@@ -77,9 +84,11 @@ public class DocoCustomization {
                 document = dbf.newDocumentBuilder().parse(f);
             }
         }
+        //
         helpOrder = getContent(document, defaultDocument, "help-order");
         brandColor = getContent(document, defaultDocument, "brand-color");
-        imprint = getContent(document, defaultDocument, "imprint");
+        imprintContent = getContent(document, defaultDocument, "imprint-content");
+        imprintLink = getContent(document, defaultDocument, "imprint-link");
         faviconBase64 = getContent(document, defaultDocument, "favicon-base64");
         faviconBase64 = CharMatcher.whitespace().removeFrom(faviconBase64);
         logoBase64 = getContent(document, defaultDocument, "logo-base64");
@@ -87,6 +96,11 @@ public class DocoCustomization {
         javaScript = getContent(document, defaultDocument, "java-script");
         documentAgendaItemKeyword = getContent(document, defaultDocument, "document-agenda-item-keyword");
         documentSortOrder = List.of(getContent(document, defaultDocument, "document-sort-order").split(","));
+        //
+    }
+
+    public boolean isImprintLinkFilled() {
+        return StringUtils.hasText(imprintLink);
     }
 
     public List<String> getDocumentSortOrder() {

@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-doco.xml
+doco-dev.xml
 .idea
 *.iws
 *.iml

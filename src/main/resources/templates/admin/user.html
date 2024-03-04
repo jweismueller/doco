@@ -18,7 +18,7 @@
                 <span th:class="${user.enabled ? '' : 'text-decoration-line-through'}"
                       th:text="${user.lastName} + ', ' + ${user.firstName}"></span>,
                 <span th:text="${user.title?.display} + ', '"
-                      th:if="${user.title != T(de.weismueller.doco.entity.UserTitleType).NONE}"></span>
+                      th:if="${user.title?.name() != 'NONE'}"></span>
                 <span th:text="${user.username}"></span>
                 <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
                    th:href="@{/admin/user/__${user.id}__}">
@@ -50,7 +50,7 @@
                 <label for="username" th:text="#{admin-user.label.username}"></label>
                 <input class="form-control" th:disabled="${user?.id!=null}" id="username" name="username"
                        th:value="${user?.username}"
-                       type="text">
+                       type="email">
             </div>
             <div class="mb-3">
                 <label for="lastName" th:text="#{admin-user.label.lastname}"></label>

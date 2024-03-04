@@ -87,7 +87,11 @@
     <footer class="d-flex flex-wrap justify-content-center py-2 border-top mt-5" th:fragment="footer">
         <div class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-dark text-decoration-none">
             <a class="text-decoration-none text-black small"
-               th:href="@{/imprint}" th:text="#{general.footer.imprint}"></a>
+               th:href="@{/imprint}" th:text="#{general.footer.imprint}"
+               th:if="${!customization.isImprintLinkFilled}"></a>
+            <a class="text-decoration-none text-black small"
+               th:href="${customization.imprintLink}" th:text="#{general.footer.imprint}"
+               th:if="${customization.isImprintLinkFilled}"></a>
         </div>
         <script th:utext="${javaScriptInjection}"></script>
     </footer>

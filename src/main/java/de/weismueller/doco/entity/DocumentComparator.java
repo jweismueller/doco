@@ -49,7 +49,7 @@ public class DocumentComparator implements Comparator<Document> {
         String key = "";
         String normalizedName = normalize(o.getName());
         Set<Map.Entry<String, String>> entries = documentOrder.entrySet();
-        String colSortKey = "z";
+        String colSortKey = "zz";
         for (Map.Entry<String, String> entry : entries) {
             Matcher matcher = Pattern.compile(entry.getValue()).matcher(o.getName());
             if (matcher.matches()) {

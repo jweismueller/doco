@@ -33,7 +33,9 @@ public class DocoControllerAdvice {
     private final DocoCustomization customization;
 
     public static boolean _isAdmin(Authentication authentication) {
-        return authentication != null && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        return authentication != null && authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
     }
 
     @ModelAttribute("currentUser")
@@ -46,18 +48,18 @@ public class DocoControllerAdvice {
         return DocoControllerAdvice._isAdmin(authentication);
     }
 
-    @ModelAttribute
-    public void addCustomization(Model model) {
-        model.addAttribute("customization", customization);
+    @ModelAttribute("customization")
+    public DocoCustomization getCustomization() {
+        return customization;
     }
 
     @ModelAttribute("collectionComparator")
-    public CollectionComparator collectionComparator(DocoCustomization customization) {
+    public CollectionComparator getCollectionComparator() {
         return new CollectionComparator(customization);
     }
 
     @ModelAttribute("javaScriptInjection")
-    public String getJavascriptInjection(DocoCustomization customization) {
+    public String getJavaScriptInjection() {
         return customization.getJavaScript();
     }
 
