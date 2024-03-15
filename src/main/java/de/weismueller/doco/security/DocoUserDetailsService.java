@@ -45,6 +45,9 @@ public class DocoUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("username " + username + " not found"));
+        if (!user.isEnabled()) {
+            throw new UsernameNotFoundException("username " + username + " not enabled");
+        }
         DocoUser doco = new DocoUser(user, getGrantedAuthorities(getPrivileges(user.getId())));
         return doco;
     }

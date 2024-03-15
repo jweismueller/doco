@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 public class DocoProperties {
 
     private String pathDocuments;
-
     private String customizationFile;
 
 }

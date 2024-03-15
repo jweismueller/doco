@@ -5,7 +5,9 @@
 <body>
 <div class="container">
     <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
-    <!-- users -->
+    <!--
+        user list
+    -->
     <div th:if="${users != null}" class="mb-5">
         <h2 class="my-3 text-secondary">
             <span th:text="#{admin-user.headline.user}"></span>
@@ -13,22 +15,27 @@
                 <span th:insert="~{_general.html :: plus-icon}" th:remove="tag"></span>
             </a>
         </h2>
-        <div th:each="user: ${users}">
-            <div class="my-2">
-                <span th:class="${user.enabled ? '' : 'text-decoration-line-through'}"
-                      th:text="${user.lastName} + ', ' + ${user.firstName}"></span>,
-                <span th:text="${user.title?.display} + ', '"
-                      th:if="${user.title?.name() != 'NONE'}"></span>
-                <span th:text="${user.username}"></span>
-                <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
-                   th:href="@{/admin/user/__${user.id}__}">
-                    <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
-                </a>
+        <div th:each="userGroup: ${users.keySet()}">
+            <div class="mt-4 mb-1 lead" th:text="${userGroup}"></div>
+            <div th:each="user: ${users.get(userGroup)}">
+                <div class="my-2">
+                    <span th:class="${user.enabled ? '' : 'text-decoration-line-through'}"
+                          th:text="${user.lastName} + ', ' + ${user.firstName}"></span>,
+                    <span th:text="${user.title?.display} + ', '"
+                          th:if="${user.title?.name() != 'NONE'}"></span>
+                    <span th:text="${user.username}"></span>
+                    <a class="text-decoration-none ms-2 text-muted" style="vertical-align: text-top;"
+                       th:href="@{/admin/user/__${user.id}__}">
+                        <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+    <!--
+        user form
+    -->
     <div th:if="${user != null}" class="mb-5">
-        <!-- User form -->
         <h2 class="my-3 text-secondary" th:if="${user?.id == null}">
             <a class="text-decoration-none ms-2 text-muted" th:href="@{'/admin/user'}">
                 <span th:insert="~{_general.html :: left-icon}" th:remove="tag"></span>
@@ -51,6 +58,15 @@
                 <input class="form-control" th:disabled="${user?.id!=null}" id="username" name="username"
                        th:value="${user?.username}"
                        type="email">
+            </div>
+            <div class="mb-3">
+                <label for="userGroup" th:text="#{admin-user.label.usergroup}"></label>
+                <select class="form-select" id="userGroup" name="userGroup" required>
+                    <option th:each="userGroup,iter:${customization.userGroups}"
+                            th:value="${iter.index}"
+                            th:text="${userGroup}"
+                            th:selected="${userGroup == user?.userGroup}"></option>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="lastName" th:text="#{admin-user.label.lastname}"></label>
@@ -83,11 +99,12 @@
                 </div>
             </div>
             <div th:if="${libraries != null}">
+                <div class="mb-3 lead" th:text="#{admin-user.headline.permissions.libraries}"></div>
                 <div th:each="library: ${libraries}">
                     <div class="mb-3">
                         <label th:for="${library.id}" th:text="${library.title}"></label>
                         <input type="checkbox" th:name="${'lib' + library.id}" th:id="${library.id}"
-                               th:checked="${selectedLibraries.contains(library.id)}">
+                               th:checked="${selectedLibraryIds.contains(library.id)}">
                     </div>
                 </div>
             </div>
@@ -97,9 +114,11 @@
             </div>
         </form>
     </div>
-    <!-- reset password form -->
+    <!--
+        password reset & user delete
+    -->
     <div th:if="${user != null && newPassword == null}" class="mb-5">
-        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.resetpassword}"></h2>
+        <h2 class="my-3 text-secondary" th:text="#{general.furtheractions}"></h2>
         <form method="post" style="max-width: 550px; width: 100%;"
               th:action="@{/admin/user/__${user.id}__/resetPassword}">
             <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
@@ -108,10 +127,43 @@
                         th:text="#{admin-user.label.resetpassword}" type="submit"></button>
             </div>
         </form>
+        <button type="button" class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
+                data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+            <span th:text="#{admin-user.label.deleteuser}"></span>
+        </button>
+        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteUserModalLabel">
+                            <span th:text="#{admin-user.headline.user}"></span>
+                            <span th:text="${user?.username}"></span>
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <span th:text="#{admin-user.msg.deleteuser}"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <span th:text="#{general.cancel}"></span>
+                        </button>
+                        <form method="post"
+                              th:action="@{/admin/user/__${user.id}__/deleteUser}">
+                            <button type="submit" class="btn btn-primary">
+                                <span th:text="#{admin-user.label.deleteuser}"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- permission view -->
+    <!--
+        permissions
+    -->
     <div th:if="${user != null}" class="mb-5">
-        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.permissions}"></h2>
+        <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.permissions.collections}"></h2>
         <div class="mb-2" th:each="library: ${user.libraries}">
             <div class="mb-2" th:each="collection: ${library.collections}">
                 <span th:text="${collection.title}"></span> (<span class="small" th:text="${library.title}"></span>)
@@ -119,5 +171,6 @@
         </div>
         <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
     </div>
+</div>
 </body>
 </html>

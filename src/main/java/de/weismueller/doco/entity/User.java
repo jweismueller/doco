@@ -40,6 +40,8 @@ public class User {
     private String lastName;
     @Enumerated(EnumType.STRING)
     private UserTitleType title;
+    @Column(length = 64)
+    private String userGroup;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Library> libraries;
 

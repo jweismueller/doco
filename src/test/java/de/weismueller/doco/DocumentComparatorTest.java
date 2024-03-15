@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package de.weismueller.doco.entity;
+package de.weismueller.doco;
 
 import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
+import de.weismueller.doco.entity.Document;
+import de.weismueller.doco.entity.DocumentComparator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -17,10 +17,11 @@
 package de.weismueller.doco;
 
 import de.weismueller.doco.entity.CollectionComparator;
+import de.weismueller.doco.entity.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class DocoControllerAdvice {
 
     private final DocoCustomization customization;
+    private final UserRepository userRepository;
 
     public static boolean _isAdmin(Authentication authentication) {
         return authentication != null && authentication.getAuthorities()
@@ -39,8 +41,16 @@ public class DocoControllerAdvice {
     }
 
     @ModelAttribute("currentUser")
-    public DocoUser getCurrentUser(Authentication authentication) {
-        return (authentication == null) ? null : (DocoUser) authentication.getPrincipal();
+    public DocoUser getCurrentUser(Authentication authentication, HttpServletRequest request) {
+        if (authentication == null) {
+            return null;
+        }
+        DocoUser docoUser = (DocoUser) authentication.getPrincipal();
+        // update user to get permission changes (only for admins)
+        if (_isAdmin(authentication)) {
+            userRepository.findByUsername(docoUser.getUsername()).ifPresent(docoUser::updateUser);
+        }
+        return docoUser;
     }
 
     @ModelAttribute("isAdmin")

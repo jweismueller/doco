@@ -17,6 +17,7 @@
 package de.weismueller.doco.controller;
 
 import com.google.common.collect.Streams;
+import com.google.common.collect.TreeMultimap;
 import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
 import de.weismueller.doco.entity.*;
@@ -112,9 +113,8 @@ public class AdminController {
         if (isNew) {
             model.addAttribute("user", new User());
         } else {
-            List<User> users = new ArrayList<>();
-            userRepository.findAll().iterator().forEachRemaining(users::add);
-            Collections.sort(users, new UserComparator());
+            TreeMultimap<String, User> users = TreeMultimap.create(String::compareTo, new UserComparator());
+            userRepository.findAll().iterator().forEachRemaining(u -> users.put(u.getUserGroup(), u));
             model.addAttribute("users", users);
             model.addAttribute("libraries", new ArrayList<>());
         }
@@ -123,15 +123,13 @@ public class AdminController {
 
     @GetMapping("/admin/user/{id}")
     public String getAdminUserById(@PathVariable("id") Integer id, Model model) {
-        Optional<User> byId = userRepository.findById(id);
-        model.addAttribute("user", byId.get());
+        User user = userRepository.findById(id).orElseThrow();
+        model.addAttribute("user", user);
         List<Library> libraries = libraryRepository.findAll();
         Collections.sort(libraries, new LibraryComparator());
         model.addAttribute("libraries", libraries);
-        model.addAttribute("selectedLibraries", libraries.stream()
-                .filter(l -> byId.get().getLibraries().contains(l))
-                .map(l -> l.getId())
-                .collect(Collectors.toList()));
+        model.addAttribute("selectedLibraryIds",
+                user.getLibraries().stream().map(l -> l.getId()).collect(Collectors.toSet()));
         return "admin/user";
     }
 
@@ -147,6 +145,14 @@ public class AdminController {
         return "admin/user";
     }
 
+    @PostMapping("/admin/user/{id}/deleteUser")
+    public String postAdminUserDeleteUser(@PathVariable("id") Integer id, Model model) {
+        User user = userRepository.findById(id).orElseThrow();
+        log.info("deleting user {}", user.getUsername());
+        userRepository.delete(user);
+        return "redirect:/admin/user";
+    }
+
     @PostMapping("/admin/user")
     public String postAdminUser(Model model, @RequestBody MultiValueMap body) {
         String firstName = String.valueOf(body.getFirst("firstName"));
@@ -154,6 +160,7 @@ public class AdminController {
         String title = String.valueOf(body.getFirst("userTitle"));
         String userId = String.valueOf(body.getFirst("userId"));
         String username = String.valueOf(body.getFirst("username"));
+        String userGroupIndex = String.valueOf(body.getFirst("userGroup"));
         boolean userEnabled = "on".equals(String.valueOf(body.getFirst("userEnabled")));
         User user;
         if (StringUtils.hasText(userId)) {
@@ -174,12 +181,13 @@ public class AdminController {
             user.setPassword(encoder.encode(generatePassword()));
             user.setUsername(username);
         }
+        String userGroup = customization.getUserGroups().get(Integer.parseInt(userGroupIndex));
+        user.setUserGroup(userGroup);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setTitle(UserTitleType.valueOf(title));
-        User saved = userRepository.save(user);
-        String redirect = String.format("redirect:/admin/user/%d", saved.getId());
-        return redirect;
+        userRepository.save(user);
+        return "redirect:/admin/user";
     }
 
     @GetMapping("/admin/collection")

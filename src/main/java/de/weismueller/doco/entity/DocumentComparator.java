@@ -17,7 +17,6 @@
 package de.weismueller.doco.entity;
 
 import de.weismueller.doco.DocoCustomization;
-import de.weismueller.doco.DocoProperties;
 import org.springframework.util.StringUtils;
 
 import java.util.*;

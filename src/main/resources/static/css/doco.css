@@ -1,6 +1,6 @@
 
 .btn-primary {
-    border-color: white;
+    border-color: white !important;
 }
 
 .btn-primary:hover {

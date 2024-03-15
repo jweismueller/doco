@@ -43,6 +43,10 @@ public class DocoUser extends User {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
     }
 
+    public void updateUser(de.weismueller.doco.entity.User user) {
+        this.user = user;
+    }
+
     public List<Integer> getLibraryIds() {
         return this.user.getLibraries().stream().map(l -> l.getId()).toList();
     }
@@ -51,9 +55,9 @@ public class DocoUser extends User {
         return this.user.getLibraries();
     }
 
-    public boolean hasCollectionAccess(Integer collection) {
+    public boolean hasCollectionAccess(Integer collectionId) {
         return getLibraries().stream()
-                .anyMatch(l -> l.getCollections().stream().anyMatch(c -> c.getId().equals(collection)));
+                .anyMatch(l -> l.getCollections().stream().anyMatch(c -> c.getId().equals(collectionId)));
     }
 
     public boolean hasLibraryAccess(Integer libraryId) {

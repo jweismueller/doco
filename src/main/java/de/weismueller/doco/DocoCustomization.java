@@ -32,7 +32,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Service
@@ -41,7 +43,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocoCustomization {
 
-    private final DocoProperties properties;
     private String environment;
     private String javaScript;
     private String helpOrder;
@@ -51,7 +52,13 @@ public class DocoCustomization {
     private String faviconBase64;
     private String logoBase64;
     private List<String> documentSortOrder;
+    private List<String> userGroups;
+    private List<String> messageOverrides;
     private String documentAgendaItemKeyword;
+    //
+    private Map<String, String> messageOverridesMap = new HashMap<>();
+    //
+    private final DocoProperties properties;
 
     private static String getContent(Document document, Document defaultDocument, String tag) {
         if (document != null) {
@@ -82,6 +89,14 @@ public class DocoCustomization {
             if (f.exists()) {
                 log.info("Loading customization from file: " + f.getAbsolutePath());
                 document = dbf.newDocumentBuilder().parse(f);
+            } else {
+                InputStream custIs = this.getClass().getResourceAsStream(file);
+                if (custIs != null) {
+                    log.info("Loading customization from classpath: " + file);
+                    document = dbf.newDocumentBuilder().parse(custIs);
+                } else {
+                    log.warn("Customization file not found: " + file);
+                }
             }
         }
         //
@@ -95,7 +110,17 @@ public class DocoCustomization {
         logoBase64 = CharMatcher.whitespace().removeFrom(logoBase64);
         javaScript = getContent(document, defaultDocument, "java-script");
         documentAgendaItemKeyword = getContent(document, defaultDocument, "document-agenda-item-keyword");
-        documentSortOrder = List.of(getContent(document, defaultDocument, "document-sort-order").split(","));
+        documentSortOrder = listOf(getContent(document, defaultDocument, "document-sort-order"));
+        userGroups = listOf(getContent(document, defaultDocument, "user-groups"));
+        messageOverrides = listOf(getContent(document, defaultDocument, "message-overrides"));
+        messageOverrides.forEach(override -> {
+            String[] split = override.split("=");
+            if (split.length == 2) {
+                if (StringUtils.hasText(split[0]) && StringUtils.hasText(split[1])) {
+                    messageOverridesMap.put(split[0], split[1]);
+                }
+            }
+        });
         //
     }
 
@@ -103,11 +128,11 @@ public class DocoCustomization {
         return StringUtils.hasText(imprintLink);
     }
 
-    public List<String> getDocumentSortOrder() {
-        if (documentSortOrder == null) {
-            return Collections.emptyList();
+    static List<String> listOf(String s) {
+        if (StringUtils.hasText(s)) {
+            return List.of(s.split(","));
         } else {
-            return documentSortOrder;
+            return Collections.emptyList();
         }
     }
 }
