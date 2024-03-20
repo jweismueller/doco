@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.weismueller.doco;
+package de.weismueller.doco.security;
 
 import de.weismueller.doco.entity.Library;
 import org.springframework.security.core.GrantedAuthority;

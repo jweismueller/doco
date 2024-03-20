@@ -16,21 +16,25 @@
 
 package de.weismueller.doco.entity;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 
 public class LibraryComparator implements Comparator<Library> {
 
     @Override
     public int compare(Library o1, Library o2) {
-        if (o1.getId().equals(o2.getId())) {
-            return 0;
-        } else if (o1.getId().equals(Integer.valueOf(1))) {
-            return -1;
-        } else if (o2.getId().equals(Integer.valueOf(1))) {
-            return 1;
+        return key(o2).compareTo(key(o1));
+    }
+
+    static String key(Library library) {
+        String s = "";
+        if (library.getDate() == null) {
+            s += LocalDate.of(1970, 1, 1).toString();
         } else {
-            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+            s += library.getDate().toString();
         }
+        s += "_" + library.getCreatedAt().toString();
+        return s;
     }
 
 }

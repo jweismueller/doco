@@ -18,6 +18,7 @@ package de.weismueller.doco;
 
 import de.weismueller.doco.entity.CollectionComparator;
 import de.weismueller.doco.entity.UserRepository;
+import de.weismueller.doco.security.DocoUser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +47,8 @@ public class DocoControllerAdvice {
             return null;
         }
         DocoUser docoUser = (DocoUser) authentication.getPrincipal();
-        // update user to get permission changes (only for admins)
-        if (_isAdmin(authentication)) {
-            userRepository.findByUsername(docoUser.getUsername()).ifPresent(docoUser::updateUser);
-        }
+        // update user to get permission changes
+        userRepository.findByUsername(docoUser.getUsername()).ifPresent(docoUser::updateUser);
         return docoUser;
     }
 

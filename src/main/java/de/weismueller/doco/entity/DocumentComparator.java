@@ -48,34 +48,53 @@ public class DocumentComparator implements Comparator<Document> {
         String key = "";
         String normalizedName = normalize(o.getName());
         Set<Map.Entry<String, String>> entries = documentOrder.entrySet();
-        String colSortKey = "zz";
-        for (Map.Entry<String, String> entry : entries) {
-            Matcher matcher = Pattern.compile(entry.getValue()).matcher(o.getName());
-            if (matcher.matches()) {
-                colSortKey = entry.getKey();
-                break;
+        String colSortKey = "y";
+        // agenda items are sorted at the end
+        if (containsDocumentAgendaItemKeyword(normalizedName)) {
+            colSortKey = "z";
+        } else {
+            for (Map.Entry<String, String> entry : entries) {
+                Matcher matcher = Pattern.compile(entry.getValue()).matcher(normalizedName);
+                if (matcher.matches()) {
+                    colSortKey = entry.getKey();
+                    break;
+                }
             }
         }
         key = colSortKey + "_";
         //
-        if (StringUtils.hasText(documentAgendaItemKeyword)) {
-            documentAgendaItemKeyword = documentAgendaItemKeyword.toLowerCase(Locale.ROOT);
-            if (normalizedName.startsWith(documentAgendaItemKeyword)) {
-                String paddedName = padNumbers(normalizedName);
-                key += "b_" + paddedName + "_a";
-            } else if (normalizedName.contains(documentAgendaItemKeyword)) {
-                String paddedName = padNumbers(normalizedName);
-                paddedName = paddedName.replaceFirst(".*" + documentAgendaItemKeyword, "");
-                key += "b_" + paddedName + "_b";
-            } else {
-                key += "a_000_000_a";
-            }
+        if (startsWithDocumentAgendaItemKeyword(normalizedName)) {
+            String paddedName = padNumbers(normalizedName);
+            key += "b_" + paddedName + "_a";
+        } else if (containsDocumentAgendaItemKeyword(normalizedName)) {
+            String paddedName = padNumbers(normalizedName);
+            paddedName = paddedName.replaceFirst(".*" + documentAgendaItemKeyword, "");
+            key += "b_" + paddedName + "_b";
         } else {
+            // all others are sorted before the agenda items
             key += "a_000_000_a";
         }
         key += "_" + normalizedName;
         o.setKey(key);
         return key;
+    }
+
+    private boolean startsWithDocumentAgendaItemKeyword(String s) {
+        if (StringUtils.hasText(documentAgendaItemKeyword)) {
+            documentAgendaItemKeyword = documentAgendaItemKeyword.toLowerCase(Locale.ROOT);
+            return s.startsWith(documentAgendaItemKeyword);
+        } else {
+            return false;
+        }
+    }
+
+    private boolean containsDocumentAgendaItemKeyword(String s) {
+        if (StringUtils.hasText(documentAgendaItemKeyword)) {
+            documentAgendaItemKeyword = documentAgendaItemKeyword.toLowerCase(Locale.ROOT);
+            return s.contains(documentAgendaItemKeyword);
+        } else {
+            return false;
+        }
     }
 
     private String normalize(String s) {

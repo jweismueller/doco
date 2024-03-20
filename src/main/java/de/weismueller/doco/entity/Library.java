@@ -22,6 +22,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,6 +44,7 @@ public class Library {
     private String description;
     private String createdBy;
     private LocalDateTime createdAt;
+    private LocalDate date;
     private String modifiedBy;
     private LocalDateTime modifiedAt;
     private Boolean enabled = true;

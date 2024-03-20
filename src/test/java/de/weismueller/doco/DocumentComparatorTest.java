@@ -32,10 +32,10 @@ public class DocumentComparatorTest {
 
     @Test
     public void testCompare() throws Exception {
-        List<String> sortOrder = List.of("Result.*", "Agreement", "Letter", "Other");
-        List<String> actual = List.of("Results overview", "Letter", "Other", "Agreement", "TOP 2", "TOP 1",
-                "Additional information for TOP 1");
-        List<String> expect = List.of("Results overview", "Agreement", "Letter", "Other", "TOP 1",
+        List<String> sortOrder = List.of("result.*", "agreement", ".*\\d{4}-\\d{2}-\\d{2}.*");
+        List<String> actual = List.of("Results overview", "2023-02-02 Test", "Other", "Agreement", "TOP 2", "TOP 1",
+                "Additional information for TOP 1", "Other 2");
+        List<String> expect = List.of("Results overview", "Agreement", "2023-02-02 Test", "Other", "Other 2", "TOP 1",
                 "Additional information for TOP 1", "TOP 2");
         DocumentComparator documentComparator = new DocumentComparator(getDocoCustomization(sortOrder));
         List<Document> list = inputList(actual);

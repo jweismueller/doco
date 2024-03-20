@@ -19,7 +19,7 @@ package de.weismueller.doco.controller;
 import com.google.common.io.BaseEncoding;
 import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
-import de.weismueller.doco.DocoUser;
+import de.weismueller.doco.security.DocoUser;
 import de.weismueller.doco.entity.Collection;
 import de.weismueller.doco.entity.CollectionComparator;
 import de.weismueller.doco.entity.CollectionRepository;

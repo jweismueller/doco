@@ -304,13 +304,17 @@ public class AdminController {
 
     @PostMapping(value = "/admin/library", consumes = "application/x-www-form-urlencoded")
     public String postAdminLibrary(Model model, Authentication authentication, @RequestBody MultiValueMap body) {
-        String libraryId = String.valueOf(body.getFirst("libraryId"));
-        String libraryTitle = String.valueOf(body.getFirst("libraryTitle"));
+        String libraryId = (String) body.getFirst("libraryId");
+        String libraryTitle = (String) body.getFirst("libraryTitle");
+        String libraryDate = (String) body.getFirst("libraryDate");
         //
         if (StringUtils.hasText(libraryId)) {
             Optional<Library> byId = libraryRepository.findById(Integer.parseInt(libraryId));
             final Library library = byId.get();
             library.setTitle(libraryTitle);
+            if (StringUtils.hasText(libraryDate)) {
+                library.setDate(LocalDate.parse(libraryDate));
+            }
             library.getCollections().clear();
             body.keySet()
                     .stream()
@@ -329,6 +333,9 @@ public class AdminController {
             library.setCreatedAt(LocalDateTime.now());
             library.setCreatedBy(authentication.getName());
             library.setTitle(libraryTitle);
+            if (StringUtils.hasText(libraryDate)) {
+                library.setDate(LocalDate.parse(libraryDate));
+            }
             library.setModifiedAt(LocalDateTime.now());
             library.setModifiedBy(authentication.getName());
             libraryRepository.save(library);

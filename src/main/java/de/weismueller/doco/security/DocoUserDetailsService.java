@@ -16,7 +16,6 @@
 
 package de.weismueller.doco.security;
 
-import de.weismueller.doco.DocoUser;
 import de.weismueller.doco.entity.User;
 import de.weismueller.doco.entity.UserAuthorityRepository;
 import de.weismueller.doco.entity.UserRepository;

@@ -18,7 +18,7 @@ package de.weismueller.doco.controller;
 
 import de.weismueller.doco.DocoCustomization;
 import de.weismueller.doco.DocoProperties;
-import de.weismueller.doco.DocoUser;
+import de.weismueller.doco.security.DocoUser;
 import de.weismueller.doco.entity.Collection;
 import de.weismueller.doco.entity.CollectionRepository;
 import de.weismueller.doco.entity.Document;

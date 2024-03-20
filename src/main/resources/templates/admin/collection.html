@@ -5,6 +5,9 @@
 <body>
 <div class="container">
     <div th:insert="~{_general.html :: header}" th:remove="tag"></div>
+    <!--
+        collection form
+    -->
     <div th:if="${collection != null}">
         <h2 class="my-3 text-secondary" th:if="${collection?.id == null}"
             th:text="#{admin-collection.headline.create}"></h2>
