@@ -61,7 +61,6 @@ public class AdminController {
     private final CollectionRepository collectionRepository;
     private final LibraryRepository libraryRepository;
     private final UserRepository userRepository;
-    private final UserAuthorityRepository userAuthorityRepository;
     private final DocoProperties properties;
     private final DocoCustomization customization;
     private final CollectionController collectionController;
@@ -150,7 +149,6 @@ public class AdminController {
     public String postAdminUserDeleteUser(@PathVariable("id") Integer id, Model model) {
         User user = userRepository.findById(id).orElseThrow();
         log.info("deleting user {}", user.getUsername());
-        userAuthorityRepository.findByUserId(id).forEach(ua -> userAuthorityRepository.delete(ua));
         userRepository.delete(user);
         return "redirect:/admin/user";
     }

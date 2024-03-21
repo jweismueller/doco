@@ -53,10 +53,4 @@ public class Library {
     @Transient
     private List<User> transientUsers = new ArrayList<>();
 
-    public List<Collection> getCollectionsSorted(Comparator<Collection> comparator) {
-        List<Collection> result = new ArrayList<>(collections);
-        result.sort(comparator);
-        return result;
-    }
-
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="customization" type="de.weismueller.doco.DocoCustomization"*/-->
+<!--/*@thymesVar id="collectionComparator" type="de.weismueller.doco.entity.CollectionComparator"*/-->
 <head th:insert="~{_general.html :: head}" th:remove="tag">></head>
 <body>
 <div class="container">
@@ -64,7 +65,7 @@
                 <span th:insert="~{_general.html :: edit-icon}" th:remove="tag"></span>
             </a>
             <ul class="small">
-                <li th:each="collection: ${library.getCollectionsSorted(collectionComparator)}">
+                <li th:each="collection: ${#lists.sort(#lists.toList(library.collections), collectionComparator)}">
                     <span th:text="${collection.title}"></span>
             </ul>
         </div>

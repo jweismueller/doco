@@ -23,6 +23,7 @@ import de.weismueller.doco.security.DocoUser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -35,6 +36,7 @@ public class DocoControllerAdvice {
 
     private final DocoCustomization customization;
     private final UserRepository userRepository;
+    private final BuildProperties buildProperties;
 
     public static boolean _isAdmin(Authentication authentication) {
         return authentication != null && authentication.getAuthorities()
@@ -71,6 +73,11 @@ public class DocoControllerAdvice {
     @ModelAttribute("libraryComparator")
     public LibraryComparator getLibraryComparator() {
         return new LibraryComparator();
+    }
+
+    @ModelAttribute("buildProperties")
+    public BuildProperties getBuildProperties() {
+        return buildProperties;
     }
 
     @ModelAttribute("javaScriptInjection")
