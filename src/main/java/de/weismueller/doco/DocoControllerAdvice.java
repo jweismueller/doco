@@ -17,6 +17,7 @@
 package de.weismueller.doco;
 
 import de.weismueller.doco.entity.CollectionComparator;
+import de.weismueller.doco.entity.LibraryComparator;
 import de.weismueller.doco.entity.UserRepository;
 import de.weismueller.doco.security.DocoUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,6 +66,11 @@ public class DocoControllerAdvice {
     @ModelAttribute("collectionComparator")
     public CollectionComparator getCollectionComparator() {
         return new CollectionComparator(customization);
+    }
+
+    @ModelAttribute("libraryComparator")
+    public LibraryComparator getLibraryComparator() {
+        return new LibraryComparator();
     }
 
     @ModelAttribute("javaScriptInjection")
