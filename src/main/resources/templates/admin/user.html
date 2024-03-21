@@ -164,7 +164,7 @@
     <!--
         permissions
     -->
-    <div th:if="${user != null}" class="mb-5">
+    <div th:if="${user != null && user?.id != null && user?.libraries != null}" class="mb-5">
         <h2 class="my-3 text-secondary" th:text="#{admin-user.headline.permissions.collections}"></h2>
         <div class="mb-2" th:each="library: ${#lists.sort(user.libraries, libraryComparator)}">
             <span th:text="${library.title}"></span>
@@ -173,8 +173,8 @@
                     <span th:text="${collection.title}"></span>
             </ul>
         </div>
-        <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
     </div>
+    <footer th:insert="~{_general.html :: footer}" th:remove="tag"></footer>
 </div>
 </body>
 </html>

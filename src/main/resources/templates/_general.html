@@ -90,12 +90,12 @@
                th:href="@{/imprint}" th:text="#{general.footer.imprint}"
                th:if="${!customization.isImprintLinkFilled}">
             </a>
-            <a class="text-decoration-none text-black small"
+            <a class="text-decoration-none text-black small" target="_blank"
                th:href="${customization.imprintLink}" th:text="#{general.footer.imprint}"
                th:if="${customization.isImprintLinkFilled}">
             </a>
             &nbsp;|&nbsp;
-            <a class="text-decoration-none text-black small"
+            <a class="text-decoration-none text-black small" target="_blank"
                href="https://github.com/jweismueller/doco"
                th:text="'doco v' + ${buildProperties.version}">
             </a>
