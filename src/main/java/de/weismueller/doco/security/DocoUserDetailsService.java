@@ -17,7 +17,6 @@
 package de.weismueller.doco.security;
 
 import de.weismueller.doco.entity.User;
-import de.weismueller.doco.entity.UserAuthorityRepository;
 import de.weismueller.doco.entity.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -38,7 +36,6 @@ import java.util.stream.Collectors;
 public class DocoUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final UserAuthorityRepository userAuthorityRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -47,23 +44,12 @@ public class DocoUserDetailsService implements UserDetailsService {
         if (!user.isEnabled()) {
             throw new UsernameNotFoundException("username " + username + " not enabled");
         }
-        DocoUser doco = new DocoUser(user, getGrantedAuthorities(getPrivileges(user.getId())));
-        return doco;
-    }
-
-    private List<String> getPrivileges(Integer userId) {
-        return userAuthorityRepository.findByUserId(userId)
-                .stream()
-                .map(userAuthority -> userAuthority.getAuthority())
-                .collect(Collectors.toList());
-    }
-
-    private List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        for (String privilege : privileges) {
-            authorities.add(new SimpleGrantedAuthority(privilege));
+        if (user.getUserGroup().toLowerCase().contains("admin")) {
+            authorities.add(new SimpleGrantedAuthority("ADMIN"));
         }
-        return authorities;
+        DocoUser doco = new DocoUser(user, authorities);
+        return doco;
     }
 
 }
