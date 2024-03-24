@@ -16,7 +16,7 @@
         </div>
         ]]>
     </help-order>
-    <user-groups>Benutzer</user-groups>
+    <user-groups>Benutzer,Administrator</user-groups>
     <message-overrides lang="de"></message-overrides>
     <document-sort-order></document-sort-order>
     <document-agenda-item-keyword></document-agenda-item-keyword>

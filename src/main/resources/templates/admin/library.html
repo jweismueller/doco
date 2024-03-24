@@ -23,7 +23,7 @@
             <span th:text="#{admin-library.headline.edit}"></span>
         </h2>
         <form method="post" style="max-width: 550px; width: 100%;" th:action="@{/admin/library}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <!-- _csrf is automatically added using th:action -->
             <input id="collectionId" name="libraryId" th:value="${library?.id}" type="hidden">
             <div class="mb-3">
                 <label class="form-label" for="libraryTitle" th:text="#{admin-library.label.title}"></label>

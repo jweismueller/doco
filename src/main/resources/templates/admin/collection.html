@@ -14,7 +14,7 @@
         <h2 class="my-3 text-secondary" th:if="${collection?.id != null}"
             th:text="#{admin-collection.headline.edit}"></h2>
         <form method="post" style="max-width: 550px; width: 100%;" th:action="@{/admin/collection}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <!-- _csrf is automatically added using th:action -->
             <input id="collectionId" name="collectionId" th:value="${collection?.id}" type="hidden">
             <div class="mb-3">
                 <label class="form-label" for="collectionTitle" th:text="#{admin-collection.label.name}"></label>

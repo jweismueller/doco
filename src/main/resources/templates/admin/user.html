@@ -53,7 +53,7 @@
         <form method="post" style="max-width: 550px; width: 100%;"
               th:if="${user != null}"
               th:action="@{/admin/user}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <!-- _csrf is automatically added using th:action -->
             <input id="userId" name="userId" th:value="${user?.id}" type="hidden">
             <div class="mb-3">
                 <label for="username" th:text="#{admin-user.label.username}"></label>
@@ -123,7 +123,7 @@
         <h2 class="my-3 text-secondary" th:text="#{general.furtheractions}"></h2>
         <form method="post" style="max-width: 550px; width: 100%;"
               th:action="@{/admin/user/__${user.id}__/resetPassword}">
-            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <!-- _csrf is automatically added using th:action -->
             <div>
                 <button class="btn btn-primary mt-2" th:style="'background-color:'+${customization.brandColor}"
                         th:text="#{admin-user.label.resetpassword}" type="submit"></button>

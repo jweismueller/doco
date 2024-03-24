@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.sql.DataSource;
@@ -34,7 +33,6 @@ import javax.sql.DataSource;
 public class DocoSecurity {
 
     private DataSource dataSource;
-    private DocoAuthenticationProvider authenticationProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -50,7 +48,6 @@ public class DocoSecurity {
 
         );
         //
-        http.csrf(c -> c.ignoringRequestMatchers("/admin/**"));
         http.logout(logout -> logout.logoutUrl("/logout").permitAll());
         http.formLogin(formLogin -> formLogin.loginPage("/login").permitAll());
         //
@@ -63,17 +60,11 @@ public class DocoSecurity {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth, PasswordEncoder encoder,
+    public void configureGlobal(AuthenticationManagerBuilder auth,
             DocoAuthenticationProvider authenticationProvider) throws Exception {
         //
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .passwordEncoder(encoder)
-                .usersByUsernameQuery("SELECT username, password, enabled from user where username = ?")
-                .authoritiesByUsernameQuery(
-                        "SELECT u.username, a.authority " + "FROM user_authority a, user u " + "WHERE u.username = ? " + "AND u.id = a.user_id");
-        //
         auth.authenticationProvider(authenticationProvider);
+        //
     }
 
 }
