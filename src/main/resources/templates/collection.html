@@ -72,6 +72,9 @@
             this.on("queuecomplete", function () {
                 location.reload();
             });
+        },
+        headers: {
+            'X-CSRF-TOKEN': '[[${_csrf.token}]]'
         }
     }
 </script>
